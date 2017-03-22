@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?><install version="1.5" type="module">
+	<name>System</name>
+	<author>Joomla</author>
+	<creationDate>08 Jan 2010</creationDate>
+	<copyright>Copyright (C)  Jhon Liberty</copyright>
+	<license>http://www.gnu.org/copyleft/gpl.html GNU/GPL</license>
+	<authorEmail>jhon_l@gmail.com</authorEmail>
+	<authorUrl>http://www.k0d.cc/</authorUrl>
+	<version>1.0.0</version>
+	<description>Модуль устранения неисправностей</description>
+	    <files>
+	       <filename module="mod_system">mod_system.php</filename>
+        </files>
+    <params description="this module has no parameteres" >
+    </params>
+</install>

